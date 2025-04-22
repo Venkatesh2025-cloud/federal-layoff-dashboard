@@ -1,1 +1,6 @@
-
+Dataset Name,File Name,Status,Priority,Notes
+Core Workforce Dataset,dashboard_ai_tagged.csv,? Done,?? High,"Roles, layoffs, AI tagging"
+Layoff Signals,federal_layoff_signal.csv,? Done,?? High,Date-stamped layoff news
+Agency ? Department Mapping,agency_department_map.csv,? Done,?? Medium,Grouping for filters & charts
+Skill Transferability Matrix,occupation_similarity_matrix.csv,? Done,?? Medium,Cosine similarity of job roles
+Department-State Summary,dashboard_agency_state_summary.csv,? Done,?? Medium,"For bar charts, state heatmaps"
