@@ -21,10 +21,9 @@ layoff_signals.columns = layoff_signals.columns.str.strip().str.lower()
 
 # === SIDEBAR FILTERS ===
 st.sidebar.header("🌟 Filters")
-st.sidebar.radio("View Mode", ["National", "City"], index=0)
 
-all_departments = sorted(df['agency_name'].dropna().unique())
-selected_agency = st.sidebar.selectbox("Filter by Agency (optional)", ["All"] + all_departments)
+all_states = sorted(df['location_name'].dropna().unique())
+selected_state = st.sidebar.selectbox("Select a State", all_states)
 
 # === KPI ROW ===
 st.markdown("""
@@ -49,89 +48,69 @@ st.markdown("""
 ), unsafe_allow_html=True)
 
 # === TABS ===
-tab1, tab2, tab3, tab4 = st.tabs([
-    "Talent Availability",
-    "Layoff News",
+tab1, tab2, tab3 = st.tabs([
     "Federal Agency Staff",
-    "Decision Intelligence"
+    "Layoff News",
+    "Federal Layoff Intelligence"
 ])
 
 with tab1:
-    st.subheader("📊 Talent Availability by Skill — US National View")
-    skill_view = df.copy()
-    if selected_agency != "All":
-        skill_view = df[df['agency_name'] == selected_agency]
+    st.subheader("🏢 Federal Agency Workforce Summary")
+    filtered_summary = summary[summary['state'] == selected_state]
+    agency_summary = filtered_summary.groupby('agency_name').agg({
+        'employee_count_2024': 'sum',
+        'layoff_estimate': 'sum'
+    }).reset_index().sort_values(by='employee_count_2024', ascending=False).head(10)
 
-    skill_summary = skill_view.groupby('skill').agg({
-        'employee_count_2024': 'sum'
-    }).reset_index().sort_values(by='employee_count_2024', ascending=False)
-
-    fig = px.bar(
-        skill_summary,
-        x='skill',
+    fig_summary = px.bar(
+        agency_summary,
+        x='agency_name',
         y='employee_count_2024',
-        color='employee_count_2024',
-        title="Available Talent by Skill Category",
-        labels={'employee_count_2024': 'Available Talent'},
+        color='layoff_estimate',
+        title=f"Top 10 Federal Agencies in {selected_state} by Workforce Size",
+        labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Estimated Layoffs'},
         height=450
     )
-    st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(skill_summary.rename(columns={"skill": "Skill Category", "employee_count_2024": "Available Talent"}), use_container_width=True)
+    st.plotly_chart(fig_summary, use_container_width=True)
+    st.dataframe(agency_summary, use_container_width=True)
 
 with tab2:
-    st.subheader("📰 Layoff News Over Time")
-    if 'date' in layoff_signals.columns:
-        layoff_signals['date'] = pd.to_datetime(layoff_signals['date'], errors='coerce')
-        trend = layoff_signals.groupby(layoff_signals['date'].dt.to_period("M"))['estimated_layoff'].sum().reset_index()
+    st.subheader(f"📰 Layoff News — {selected_state}")
+    filtered_layoffs = layoff_signals[layoff_signals['locations impacted'].str.contains(selected_state, case=False, na=False)]
+    if not filtered_layoffs.empty:
+        filtered_layoffs['date'] = pd.to_datetime(filtered_layoffs['date'], errors='coerce')
+        trend = filtered_layoffs.groupby(filtered_layoffs['date'].dt.to_period("M"))['estimated_layoff'].sum().reset_index()
         trend['date'] = trend['date'].astype(str)
         st.line_chart(trend.rename(columns={'estimated_layoff': 'Layoffs'}).set_index('date'))
-        st.dataframe(layoff_signals[['date', 'agency', 'estimated_layoff', 'locations impacted']], use_container_width=True)
+        st.dataframe(filtered_layoffs[['date', 'agency', 'estimated_layoff', 'locations impacted']], use_container_width=True)
     else:
-        st.warning("Date column missing in layoff signal file.")
+        st.info("No layoff data available for this state.")
 
 with tab3:
-    st.subheader("🏢 Federal Agency Workforce Summary")
-    if 'agency_name' in summary.columns:
-        agency_summary = summary.groupby(['agency_name', 'state']).agg({
-            'employee_count_2024': 'sum',
-            'layoff_estimate': 'sum'
-        }).reset_index()
-        fig_summary = px.bar(
-            agency_summary,
-            x='agency_name',
-            y='employee_count_2024',
-            color='layoff_estimate',
-            title="Federal Agency Workforce Overview",
-            labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Estimated Layoffs'},
-            height=450
-        )
-        st.plotly_chart(fig_summary, use_container_width=True)
-        st.dataframe(agency_summary, use_container_width=True)
-    else:
-        st.warning("Summary dataset missing expected columns.")
+    st.subheader(f"📉 Federal Layoff Intelligence — {selected_state}")
+    state_df = df[df['location_name'] == selected_state]
 
-with tab4:
-    st.subheader("✅ Decision Intelligence — Summary")
-    decision_summary = df.groupby('skill').agg({
-        'employee_count_2024': 'sum',
-        'layoff_estimate': 'sum',
-        'ai_exposed': 'sum'
-    }).reset_index().sort_values(by='layoff_estimate', ascending=False).head(10)
+    top_jobs = state_df.groupby('occupation_title')['layoff_estimate'].sum().reset_index().sort_values(by='layoff_estimate', ascending=False).head(5)
+    fig_jobs = px.bar(
+        top_jobs,
+        x='occupation_title',
+        y='layoff_estimate',
+        title="Top 5 Occupations by Estimated Layoffs",
+        labels={'layoff_estimate': 'Estimated Layoffs'},
+        height=400
+    )
+    st.plotly_chart(fig_jobs, use_container_width=True)
 
-    st.markdown("These skills show the highest potential disruption and are flagged for upskilling or redeployment.")
-    fig_decision = px.bar(
-        decision_summary,
+    top_skills = state_df.groupby('skill')['layoff_estimate'].sum().reset_index().sort_values(by='layoff_estimate', ascending=False).head(5)
+    fig_skills = px.bar(
+        top_skills,
         x='skill',
         y='layoff_estimate',
-        color='ai_exposed',
-        title="Top 10 At-Risk Skills by Layoff Estimate",
-        labels={'layoff_estimate': 'Estimated Layoffs', 'ai_exposed': 'AI Exposure'},
-        height=450
+        title="Top 5 Skills by Estimated Layoffs",
+        labels={'layoff_estimate': 'Estimated Layoffs'},
+        height=400
     )
-    st.plotly_chart(fig_decision, use_container_width=True)
-    st.dataframe(decision_summary.rename(columns={
-        "skill": "Skill Category",
-        "employee_count_2024": "Available Talent",
-        "layoff_estimate": "Estimated Layoffs",
-        "ai_exposed": "AI-Exposed"
-    }), use_container_width=True)
+    st.plotly_chart(fig_skills, use_container_width=True)
+
+    st.markdown("---")
+    st.dataframe(state_df[['occupation_title', 'skill', 'employee_count_2024', 'layoff_estimate', 'ai_exposed']], use_container_width=True)
