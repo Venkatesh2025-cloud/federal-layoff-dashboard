@@ -16,6 +16,9 @@ df = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
 summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
 layoff_signals = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1')
 
+# Check actual column names for layoff_signals
+layoff_signals.columns = layoff_signals.columns.str.strip().str.lower()
+
 # === SIDEBAR FILTERS ===
 st.sidebar.header("🔍 Filter Dashboard")
 
@@ -77,11 +80,14 @@ st.plotly_chart(px.bar(
 
 # === LAYOFF TREND SECTION ===
 st.markdown("### 📉 Layoff News Trend Over Time")
-layoff_signals['date'] = pd.to_datetime(layoff_signals['date'], dayfirst=True)
-layoff_signals['estimated_layoff'] = pd.to_numeric(layoff_signals['estimated_layoff'], errors='coerce')
-trend = layoff_signals.groupby(layoff_signals['date'].dt.to_period("M"))['estimated_layoff'].sum().reset_index()
-trend['date'] = trend['date'].astype(str)
-st.line_chart(trend.rename(columns={'estimated_layoff': 'Layoffs'}).set_index('date'))
+if 'date' in layoff_signals.columns:
+    layoff_signals['date'] = pd.to_datetime(layoff_signals['date'], dayfirst=True)
+    layoff_signals['estimated_layoff'] = pd.to_numeric(layoff_signals['estimated_layoff'], errors='coerce')
+    trend = layoff_signals.groupby(layoff_signals['date'].dt.to_period("M"))['estimated_layoff'].sum().reset_index()
+    trend['date'] = trend['date'].astype(str)
+    st.line_chart(trend.rename(columns={'estimated_layoff': 'Layoffs'}).set_index('date'))
+else:
+    st.warning("\u26a0\ufe0f 'date' column not found in layoff_signals.csv. Please check column headers.")
 
 # === FOOTER ===
 st.markdown("---")
