@@ -11,11 +11,14 @@ signal = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1')
 dept_map = pd.read_csv("data/agency_department_map.csv", encoding='latin1')
 
 # === DATA CLEANING ===
-df.columns = df.columns.str.strip().str.lower()
-summary.columns = summary.columns.str.strip().str.lower()
-signal.columns = signal.columns.str.strip().str.lower()
-dept_map.columns = dept_map.columns.str.strip().str.lower()
-dept_map = dept_map.rename(columns={'agency sub name': 'agency_name'})
+def clean_columns(df):
+    return df.rename(columns=lambda col: col.strip().lower().replace(" ", "_"))
+
+df = clean_columns(df)
+summary = clean_columns(summary)
+signal = clean_columns(signal)
+dept_map = clean_columns(dept_map)
+dept_map = dept_map.rename(columns={'agency_sub_name': 'agency_name'})
 
 # === MERGE DEPARTMENT INFO ===
 if 'agency_name' in dept_map.columns and 'department' in dept_map.columns:
@@ -59,8 +62,13 @@ with tab1:
     col = 'location_name' if 'location_name' in summary.columns else 'state'
     if col in summary.columns:
         filtered = summary[summary[col] == selected_state]
-        agency_col = 'agency_name' if 'agency_name' in filtered.columns else 'agency'
-        if agency_col in filtered.columns:
+        agency_col = None
+        for name in ['agency_name', 'agency name', 'agency']:
+            if name in filtered.columns:
+                agency_col = name
+                break
+
+        if agency_col:
             grouped = filtered.groupby(agency_col).agg({
                 'employee_count_2024': 'sum',
                 'layoff_estimate': 'sum'
@@ -78,16 +86,16 @@ with tab1:
 
 with tab2:
     st.subheader(f"📰 Layoff News – {selected_state}")
-    if 'locations impacted' in signal.columns:
-        layoffs = signal[signal['locations impacted'].str.contains(selected_state, case=False, na=False)]
+    if 'locations_impacted' in signal.columns:
+        layoffs = signal[signal['locations_impacted'].str.contains(selected_state, case=False, na=False)]
         if not layoffs.empty:
             if 'date' in layoffs.columns:
                 layoffs['date'] = pd.to_datetime(layoffs['date'], errors='coerce')
-                if 'estimated layoff' in layoffs.columns:
-                    trend = layoffs.groupby(layoffs['date'].dt.to_period("M"))['estimated layoff'].sum().reset_index()
+                if 'estimated_layoff' in layoffs.columns:
+                    trend = layoffs.groupby(layoffs['date'].dt.to_period("M"))['estimated_layoff'].sum().reset_index()
                     trend['date'] = trend['date'].astype(str)
-                    st.line_chart(trend.rename(columns={'estimated layoff': 'Layoffs'}).set_index('date'))
-            st.dataframe(layoffs[['date', 'agency name', 'estimated layoff', 'locations impacted']], use_container_width=True)
+                    st.line_chart(trend.rename(columns={'estimated_layoff': 'Layoffs'}).set_index('date'))
+            st.dataframe(layoffs[['date', 'agency_name', 'estimated_layoff', 'locations_impacted']], use_container_width=True)
         else:
             st.info("No layoff news for this state.")
     else:
