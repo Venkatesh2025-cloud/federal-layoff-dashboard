@@ -6,13 +6,19 @@ import zipfile
 
 st.set_page_config(page_title="Federal Workforce Skill Risk Dashboard", layout="wide")
 
-# === Load Data from ZIP ===
-zip_path = "uploaded_data_bundle.zip"  # Replace with actual ZIP file name
+# === Load Data from ZIP or FileUploader ===
+zip_path = "clean_dashboard_ai_tagged.zip"  # Updated filename
 csv_name = "data/clean_dashboard_ai_tagged.csv"  # Path inside the ZIP
 
-with zipfile.ZipFile(zip_path, 'r') as z:
-    with z.open(csv_name) as f:
-        df = pd.read_csv(f)
+uploaded_zip = st.sidebar.file_uploader("📁 Upload ZIP with Clean Data", type="zip")
+if uploaded_zip is not None:
+    with zipfile.ZipFile(uploaded_zip) as z:
+        with z.open(csv_name) as f:
+            df = pd.read_csv(f)
+else:
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        with z.open(csv_name) as f:
+            df = pd.read_csv(f)
 
 # === Clean Columns ===
 df.columns = df.columns.str.strip().str.lower()
