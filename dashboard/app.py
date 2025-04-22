@@ -36,19 +36,21 @@ with tab1:
     col = 'location_name' if 'location_name' in summary.columns else 'state'
     if col in summary.columns:
         filtered = summary[summary[col] == selected_state]
-        if 'agency_name' in filtered.columns:
-            grouped = filtered.groupby('agency_name').agg({
+        # Adjust for column name variation
+        agency_col = 'agency_name' if 'agency_name' in filtered.columns else 'agency'
+        if agency_col in filtered.columns:
+            grouped = filtered.groupby(agency_col).agg({
                 'employee_count_2024': 'sum',
                 'layoff_estimate': 'sum'
             }).reset_index().sort_values(by='employee_count_2024', ascending=False).head(10)
 
-            fig = px.bar(grouped, x='agency_name', y='employee_count_2024', color='layoff_estimate',
+            fig = px.bar(grouped, x=agency_col, y='employee_count_2024', color='layoff_estimate',
                          labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Layoff Estimate'},
                          title=f"Top 10 Agencies in {selected_state}", height=450)
             st.plotly_chart(fig, use_container_width=True)
             st.dataframe(grouped, use_container_width=True)
         else:
-            st.warning("Missing 'agency_name' column in summary data.")
+            st.warning("Missing agency column in summary data.")
     else:
         st.warning("Could not find a valid state/location column in the summary data.")
 
