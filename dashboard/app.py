@@ -51,11 +51,26 @@ elif ai_filter == "Non-AI":
     filtered_df = filtered_df[filtered_df['ai_exposed'] == 0]
 
 # === KPI METRICS ===
-st.subheader("📊 Key Workforce Metrics")
+st.subheader("📈 Key Workforce Metrics")
 col1, col2, col3 = st.columns(3)
 col1.metric("👥 Total Employees", int(filtered_df['employee_count_2024'].sum()))
 col2.metric("🚫 Estimated Layoffs", int(filtered_df['layoff_estimate'].sum()))
 col3.metric("🧑‍🤖 AI-Tagged Roles", int(filtered_df['ai_exposed'].sum()))
+
+# === SKILLS INSIGHTS SECTION ===
+st.markdown("### 🔄 Skill Availability & Exposure")
+skill_summary = filtered_df.groupby('skill').agg({
+    'employee_count_2024': 'sum',
+    'layoff_estimate': 'sum',
+    'ai_exposed': 'sum'
+}).reset_index().sort_values(by='employee_count_2024', ascending=False).head(15)
+
+fig = px.bar(skill_summary, x='skill', y='employee_count_2024', color='ai_exposed',
+             title="Top 15 Skills by Availability and AI Exposure",
+             labels={"employee_count_2024": "Available Employees", "ai_exposed": "AI-Tagged"})
+
+st.plotly_chart(fig, use_container_width=True)
+st.dataframe(skill_summary, use_container_width=True)
 
 # === CHARTS SECTION ===
 st.markdown("### 🔺 Layoff Estimates by Department")
