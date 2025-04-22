@@ -2,19 +2,35 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import os
+import zipfile
 
 st.set_page_config(page_title="Federal Workforce Skill Risk Dashboard", layout="wide")
 
-# === Load Data ===
-data_path = "data"
-df = pd.read_csv(os.path.join(data_path, "clean_dashboard_ai_tagged.csv"))
+# === Load Data from ZIP ===
+zip_path = "uploaded_data_bundle.zip"  # Replace with actual ZIP file name
+csv_name = "data/clean_dashboard_ai_tagged.csv"  # Path inside the ZIP
+
+with zipfile.ZipFile(zip_path, 'r') as z:
+    with z.open(csv_name) as f:
+        df = pd.read_csv(f)
+
+# === Clean Columns ===
 df.columns = df.columns.str.strip().str.lower()
 
 # === Sidebar Filters ===
 st.sidebar.header("📍 Filter Options")
 selected_state = st.sidebar.selectbox("Select a State", sorted(df['location_name'].dropna().unique()))
 
+unique_skills = sorted(df['skill'].unique())
+skill_filter = st.sidebar.multiselect("Search or select skills", unique_skills)
+
+ai_only = st.sidebar.checkbox("Show only AI-exposed skills", value=False)
+
 filtered_df = df[df['location_name'] == selected_state]
+if skill_filter:
+    filtered_df = filtered_df[filtered_df['skill'].isin(skill_filter)]
+if ai_only:
+    filtered_df = filtered_df[filtered_df['ai_exposed'] == 1]
 
 # === KPI Row ===
 st.markdown("""
@@ -33,17 +49,21 @@ tab1, tab2, tab3 = st.tabs(["📊 Skill Risk Explorer", "🧑‍💼 Job Role In
 
 with tab1:
     st.subheader(f"Top At-Risk Skills in {selected_state}")
-    top_skills = (
+    skill_summary = (
         filtered_df.groupby("skill")["layoff_estimate"]
         .sum()
         .reset_index()
         .sort_values(by="layoff_estimate", ascending=False)
-        .head(10)
     )
-    fig = px.bar(top_skills, x="skill", y="layoff_estimate", color="layoff_estimate",
-                 height=400, title="🔧 Top 10 Skills by Layoff Estimate")
+
+    show_more = st.checkbox("Show full skill list", value=False)
+    display_data = skill_summary if show_more else skill_summary.head(10)
+
+    fig = px.bar(display_data, x="skill", y="layoff_estimate", color="layoff_estimate",
+                 height=400, title="🔧 Skills by Layoff Estimate",
+                 hover_data={"layoff_estimate": True})
     st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(top_skills, use_container_width=True)
+    st.dataframe(display_data, use_container_width=True)
 
 with tab2:
     st.subheader(f"Top Jobs by Layoff Estimate in {selected_state}")
