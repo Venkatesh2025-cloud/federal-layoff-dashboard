@@ -14,9 +14,10 @@ st.markdown("""
 # === LOAD DATA ===
 df = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
 summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
+summary.columns = summary.columns.str.strip().str.lower()
 layoff_signals = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1')
 
-# Check actual column names for layoff_signals
+# Normalize columns
 layoff_signals.columns = layoff_signals.columns.str.strip().str.lower()
 
 # === SIDEBAR FILTERS ===
@@ -56,23 +57,27 @@ tab1, tab2, tab3 = st.tabs([
 
 with tab1:
     st.subheader("🏢 Federal Agency Workforce Summary")
-    filtered_summary = summary[summary['state'] == selected_state]
-    agency_summary = filtered_summary.groupby('agency_name').agg({
-        'employee_count_2024': 'sum',
-        'layoff_estimate': 'sum'
-    }).reset_index().sort_values(by='employee_count_2024', ascending=False).head(10)
+    if 'state' in summary.columns:
+        location_col = 'state' if 'state' in summary.columns else 'location_name'
+        filtered_summary = summary[summary[location_col] == selected_state]
+        agency_summary = filtered_summary.groupby('agency_name').agg({
+            'employee_count_2024': 'sum',
+            'layoff_estimate': 'sum'
+        }).reset_index().sort_values(by='employee_count_2024', ascending=False).head(10)
 
-    fig_summary = px.bar(
-        agency_summary,
-        x='agency_name',
-        y='employee_count_2024',
-        color='layoff_estimate',
-        title=f"Top 10 Federal Agencies in {selected_state} by Workforce Size",
-        labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Estimated Layoffs'},
-        height=450
-    )
-    st.plotly_chart(fig_summary, use_container_width=True)
-    st.dataframe(agency_summary, use_container_width=True)
+        fig_summary = px.bar(
+            agency_summary,
+            x='agency_name',
+            y='employee_count_2024',
+            color='layoff_estimate',
+            title=f"Top 10 Federal Agencies in {selected_state} by Workforce Size",
+            labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Estimated Layoffs'},
+            height=450
+        )
+        st.plotly_chart(fig_summary, use_container_width=True)
+        st.dataframe(agency_summary, use_container_width=True)
+    else:
+        st.warning("The column 'state' is missing in the summary dataset. Please verify the file.")
 
 with tab2:
     st.subheader(f"📰 Layoff News — {selected_state}")
