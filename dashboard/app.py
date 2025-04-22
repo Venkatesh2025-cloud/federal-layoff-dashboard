@@ -18,12 +18,30 @@ layoff_signals = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1'
 
 # === SIDEBAR FILTERS ===
 st.sidebar.header("🔍 Filter Dashboard")
-states = st.sidebar.multiselect("Select State(s)", options=sorted(df['location_name'].dropna().unique()), default=sorted(df['location_name'].dropna().unique()))
-departments = st.sidebar.multiselect("Select Agency(s)", options=sorted(df['agency_name'].dropna().unique()), default=sorted(df['agency_name'].dropna().unique()))
+
+# SaaS-style State Filter
+st.sidebar.markdown("### 📺 Select State(s)")
+all_states = sorted(df['location_name'].dropna().unique())
+select_all_states = st.sidebar.checkbox("Select All States", value=True)
+if select_all_states:
+    selected_states = st.sidebar.multiselect("States", all_states, default=all_states)
+else:
+    selected_states = st.sidebar.multiselect("States", all_states)
+
+# SaaS-style Agency Filter
+st.sidebar.markdown("### 🏢 Select Department(s)")
+all_departments = sorted(df['agency_name'].dropna().unique())
+select_all_departments = st.sidebar.checkbox("Select All Departments", value=True)
+if select_all_departments:
+    selected_departments = st.sidebar.multiselect("Departments", all_departments, default=all_departments)
+else:
+    selected_departments = st.sidebar.multiselect("Departments", all_departments)
+
+# AI Filter
 ai_filter = st.sidebar.selectbox("AI Exposure Filter", options=["All", "AI-Exposed Only", "Non-AI"])
 
 # === APPLY FILTERS ===
-filtered_df = df[df['location_name'].isin(states) & df['agency_name'].isin(departments)]
+filtered_df = df[df['location_name'].isin(selected_states) & df['agency_name'].isin(selected_departments)]
 if ai_filter == "AI-Exposed Only":
     filtered_df = filtered_df[filtered_df['ai_exposed'] == 1]
 elif ai_filter == "Non-AI":
