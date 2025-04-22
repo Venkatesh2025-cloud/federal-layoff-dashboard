@@ -8,15 +8,34 @@ st.set_page_config(page_title="Federal Layoff Intelligence Dashboard", layout="w
 df = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
 summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
 signal = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1')
+dept_map = pd.read_csv("data/agency_department_map.csv")
 
 # === DATA CLEANING ===
 df.columns = df.columns.str.strip().str.lower()
 summary.columns = summary.columns.str.strip().str.lower()
 signal.columns = signal.columns.str.strip().str.lower()
+dept_map.columns = dept_map.columns.str.strip().str.lower()
+dept_map = dept_map.rename(columns={'agency sub name': 'agency_name'})
+
+# === MERGE DEPARTMENT INFO ===
+df = df.merge(dept_map[['agency_name', 'department']], on='agency_name', how='left')
 
 # === FILTERS ===
 st.sidebar.header("🌟 Filters")
 selected_state = st.sidebar.selectbox("Select a State", sorted(df['location_name'].dropna().unique()))
+
+agency_options = sorted(df[df['location_name'] == selected_state]['agency_name'].dropna().unique())
+selected_agency = st.sidebar.selectbox("Filter by Agency Name", ["All"] + agency_options)
+
+dept_options = sorted(df[df['location_name'] == selected_state]['department'].dropna().unique())
+selected_dept = st.sidebar.selectbox("Filter by Department", ["All"] + dept_options)
+
+# Apply filters
+df_filtered = df[df['location_name'] == selected_state]
+if selected_agency != "All":
+    df_filtered = df_filtered[df_filtered['agency_name'] == selected_agency]
+if selected_dept != "All":
+    df_filtered = df_filtered[df_filtered['department'] == selected_dept]
 
 # === KPI ===
 st.markdown("""
@@ -24,9 +43,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
-col1.metric("Skill Categories", df['skill'].nunique())
-col2.metric("Available Talent", f"{df['employee_count_2024'].sum():,}")
-col3.metric("Most Available Skill", df.groupby('skill')['employee_count_2024'].sum().idxmax())
+col1.metric("Skill Categories", df_filtered['skill'].nunique())
+col2.metric("Available Talent", f"{df_filtered['employee_count_2024'].sum():,}")
+col3.metric("Most Available Skill", df_filtered.groupby('skill')['employee_count_2024'].sum().idxmax())
 
 # === TABS ===
 tab1, tab2, tab3 = st.tabs(["Federal Agency Staff", "Layoff News", "Federal Layoff Intelligence"])
@@ -36,7 +55,6 @@ with tab1:
     col = 'location_name' if 'location_name' in summary.columns else 'state'
     if col in summary.columns:
         filtered = summary[summary[col] == selected_state]
-        # Adjust for column name variation
         agency_col = 'agency_name' if 'agency_name' in filtered.columns else 'agency'
         if agency_col in filtered.columns:
             grouped = filtered.groupby(agency_col).agg({
@@ -73,18 +91,17 @@ with tab2:
 
 with tab3:
     st.subheader(f"📉 Federal Layoff Intelligence – {selected_state}")
-    state_df = df[df['location_name'] == selected_state]
 
-    top_jobs = state_df.groupby('occupation_title')['layoff_estimate'].sum().reset_index()
+    top_jobs = df_filtered.groupby('occupation_title')['layoff_estimate'].sum().reset_index()
     top_jobs = top_jobs.sort_values(by='layoff_estimate', ascending=False).head(5)
     job_fig = px.bar(top_jobs, x='occupation_title', y='layoff_estimate',
                     title="Top 5 Occupations by Estimated Layoffs", height=400)
     st.plotly_chart(job_fig, use_container_width=True)
 
-    top_skills = state_df.groupby('skill')['layoff_estimate'].sum().reset_index()
+    top_skills = df_filtered.groupby('skill')['layoff_estimate'].sum().reset_index()
     top_skills = top_skills.sort_values(by='layoff_estimate', ascending=False).head(5)
     skill_fig = px.bar(top_skills, x='skill', y='layoff_estimate',
                       title="Top 5 Skills by Estimated Layoffs", height=400)
     st.plotly_chart(skill_fig, use_container_width=True)
 
-    st.dataframe(state_df[['occupation_title', 'skill', 'employee_count_2024', 'layoff_estimate', 'ai_exposed']], use_container_width=True)
+    st.dataframe(df_filtered[['occupation_title', 'skill', 'employee_count_2024', 'layoff_estimate', 'ai_exposed']], use_container_width=True)
