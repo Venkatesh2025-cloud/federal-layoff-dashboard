@@ -8,7 +8,7 @@ st.set_page_config(page_title="Federal Workforce Skill Risk Dashboard", layout="
 
 # === Load Data from ZIP or FileUploader ===
 zip_path = "clean_dashboard_ai_tagged.zip"  # Updated filename
-csv_name = "data/clean_dashboard_ai_tagged.csv"  # Path inside the ZIP
+csv_name = "clean_dashboard_ai_tagged.csv"  # Path inside the ZIP (adjusted to remove "data/" prefix)
 
 uploaded_zip = st.sidebar.file_uploader("📁 Upload ZIP with Clean Data", type="zip")
 if uploaded_zip is not None:
