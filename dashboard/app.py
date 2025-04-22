@@ -20,7 +20,7 @@ layoff_signals = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1'
 layoff_signals.columns = layoff_signals.columns.str.strip().str.lower()
 
 # === SIDEBAR FILTERS ===
-st.sidebar.header("\ud83c\udf1f Filters")
+st.sidebar.header("🌟 Filters")
 st.sidebar.radio("View Mode", ["National", "City"], index=0)
 
 all_departments = sorted(df['agency_name'].dropna().unique())
@@ -30,15 +30,15 @@ selected_agency = st.sidebar.selectbox("Filter by Agency (optional)", ["All"] + 
 st.markdown("""
 <div style="display: flex; justify-content: space-between; padding: 10px 0 20px 0;">
     <div style="text-align: center; flex: 1;">
-        <h3 style="color: #3366cc;">\ud83c\udf93 Skill Categories</h3>
+        <h3 style="color: #3366cc;">🎓 Skill Categories</h3>
         <h1 style="color: #111;">{}</h1>
     </div>
     <div style="text-align: center; flex: 1;">
-        <h3 style="color: #3366cc;">\ud83d\udc65 Available Talent</h3>
+        <h3 style="color: #3366cc;">👥 Available Talent</h3>
         <h1 style="color: #111;">{:,}</h1>
     </div>
     <div style="text-align: center; flex: 1;">
-        <h3 style="color: #3366cc;">\ud83c\udfc6 Most Available Skill</h3>
+        <h3 style="color: #3366cc;">🏆 Most Available Skill</h3>
         <h1 style="color: #111;">{}</h1>
     </div>
 </div>
@@ -58,7 +58,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 with tab1:
-    st.subheader("\ud83d\udcca Talent Availability by Skill \u2014 US National View")
+    st.subheader("📊 Talent Availability by Skill — US National View")
     skill_view = df.copy()
     if selected_agency != "All":
         skill_view = df[df['agency_name'] == selected_agency]
