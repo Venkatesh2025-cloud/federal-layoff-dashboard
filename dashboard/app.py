@@ -10,9 +10,9 @@ summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
 signal = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1')
 
 # === DATA CLEANING ===
+df.columns = df.columns.str.strip().str.lower()
 summary.columns = summary.columns.str.strip().str.lower()
 signal.columns = signal.columns.str.strip().str.lower()
-df.columns = df.columns.str.strip().str.lower()
 
 # === FILTERS ===
 st.sidebar.header("🌟 Filters")
@@ -33,30 +33,41 @@ tab1, tab2, tab3 = st.tabs(["Federal Agency Staff", "Layoff News", "Federal Layo
 
 with tab1:
     st.subheader(f"🏢 Federal Agency Workforce Summary – {selected_state}")
-    col = 'state' if 'state' in summary.columns else 'location_name'
-    filtered = summary[summary[col] == selected_state]
-    grouped = filtered.groupby('agency_name').agg({
-        'employee_count_2024': 'sum',
-        'layoff_estimate': 'sum'
-    }).reset_index().sort_values(by='employee_count_2024', ascending=False).head(10)
+    col = 'location_name' if 'location_name' in summary.columns else 'state'
+    if col in summary.columns:
+        filtered = summary[summary[col] == selected_state]
+        if 'agency_name' in filtered.columns:
+            grouped = filtered.groupby('agency_name').agg({
+                'employee_count_2024': 'sum',
+                'layoff_estimate': 'sum'
+            }).reset_index().sort_values(by='employee_count_2024', ascending=False).head(10)
 
-    fig = px.bar(grouped, x='agency_name', y='employee_count_2024', color='layoff_estimate',
-                 labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Layoff Estimate'},
-                 title=f"Top 10 Agencies in {selected_state}", height=450)
-    st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(grouped, use_container_width=True)
+            fig = px.bar(grouped, x='agency_name', y='employee_count_2024', color='layoff_estimate',
+                         labels={'employee_count_2024': 'Employees', 'layoff_estimate': 'Layoff Estimate'},
+                         title=f"Top 10 Agencies in {selected_state}", height=450)
+            st.plotly_chart(fig, use_container_width=True)
+            st.dataframe(grouped, use_container_width=True)
+        else:
+            st.warning("Missing 'agency_name' column in summary data.")
+    else:
+        st.warning("Could not find a valid state/location column in the summary data.")
 
 with tab2:
     st.subheader(f"📰 Layoff News – {selected_state}")
-    layoffs = signal[signal['locations impacted'].str.contains(selected_state, case=False, na=False)]
-    if not layoffs.empty:
-        layoffs['date'] = pd.to_datetime(layoffs['date'], errors='coerce')
-        trend = layoffs.groupby(layoffs['date'].dt.to_period("M"))['estimated layoff'].sum().reset_index()
-        trend['date'] = trend['date'].astype(str)
-        st.line_chart(trend.rename(columns={'estimated layoff': 'Layoffs'}).set_index('date'))
-        st.dataframe(layoffs[['date', 'agency name', 'estimated layoff', 'locations impacted']], use_container_width=True)
+    if 'locations impacted' in signal.columns:
+        layoffs = signal[signal['locations impacted'].str.contains(selected_state, case=False, na=False)]
+        if not layoffs.empty:
+            if 'date' in layoffs.columns:
+                layoffs['date'] = pd.to_datetime(layoffs['date'], errors='coerce')
+                if 'estimated layoff' in layoffs.columns:
+                    trend = layoffs.groupby(layoffs['date'].dt.to_period("M"))['estimated layoff'].sum().reset_index()
+                    trend['date'] = trend['date'].astype(str)
+                    st.line_chart(trend.rename(columns={'estimated layoff': 'Layoffs'}).set_index('date'))
+            st.dataframe(layoffs[['date', 'agency name', 'estimated layoff', 'locations impacted']], use_container_width=True)
+        else:
+            st.info("No layoff news for this state.")
     else:
-        st.info("No layoff news for this state.")
+        st.warning("Missing 'locations impacted' column in layoff signal data.")
 
 with tab3:
     st.subheader(f"📉 Federal Layoff Intelligence – {selected_state}")
