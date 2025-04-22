@@ -108,4 +108,4 @@ with tab3:
                       title="Top 5 Skills by Estimated Layoffs", height=400)
     st.plotly_chart(skill_fig, use_container_width=True)
 
-    st.dataframe(df_filtered[['occupation_title', 'skill', 'employee_count_2024', 'layoff_estimate', 'ai_exposed']], use_container_width=True)
+    st.dataframe(df_filtered[['occupation_title', 'skill', 'employee_count_2024', 'layoff_estimate']], use_container_width=True)
