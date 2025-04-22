@@ -18,7 +18,8 @@ dept_map.columns = dept_map.columns.str.strip().str.lower()
 dept_map = dept_map.rename(columns={'agency sub name': 'agency_name'})
 
 # === MERGE DEPARTMENT INFO ===
-df = df.merge(dept_map[['agency_name', 'department']], on='agency_name', how='left')
+if 'agency_name' in dept_map.columns and 'department' in dept_map.columns:
+    df = df.merge(dept_map[['agency_name', 'department']], on='agency_name', how='left')
 
 # === FILTERS ===
 st.sidebar.header("🌟 Filters")
@@ -27,8 +28,11 @@ selected_state = st.sidebar.selectbox("Select a State", sorted(df['location_name
 agency_options = sorted(df[df['location_name'] == selected_state]['agency_name'].dropna().unique())
 selected_agency = st.sidebar.selectbox("Filter by Agency Name", ["All"] + agency_options)
 
-dept_options = sorted(df[df['location_name'] == selected_state]['department'].dropna().unique())
-selected_dept = st.sidebar.selectbox("Filter by Department", ["All"] + dept_options)
+if 'department' in df.columns:
+    dept_options = sorted(df[df['location_name'] == selected_state]['department'].dropna().unique())
+    selected_dept = st.sidebar.selectbox("Filter by Department", ["All"] + dept_options)
+else:
+    selected_dept = "All"
 
 # Apply filters
 df_filtered = df[df['location_name'] == selected_state]
