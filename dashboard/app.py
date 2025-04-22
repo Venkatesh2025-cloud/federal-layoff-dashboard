@@ -8,7 +8,7 @@ st.set_page_config(page_title="Federal Layoff Intelligence Dashboard", layout="w
 df = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
 summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
 signal = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1')
-dept_map = pd.read_csv("data/agency_department_map.csv", encoding='utf-8-sig')
+dept_map = pd.read_csv("data/agency_department_map.csv", encoding='latin1')
 
 # === DATA CLEANING ===
 df.columns = df.columns.str.strip().str.lower()
