@@ -20,90 +20,73 @@ layoff_signals = pd.read_csv("data/federal_layoff_signal.csv", encoding='latin1'
 layoff_signals.columns = layoff_signals.columns.str.strip().str.lower()
 
 # === SIDEBAR FILTERS ===
-st.sidebar.header("🔍 Filter Dashboard")
+st.sidebar.header("\ud83c\udf1f Filters")
+st.sidebar.radio("View Mode", ["National", "City"], index=0)
 
-# SaaS-style State Filter
-st.sidebar.markdown("### 📺 Select State(s)")
-all_states = sorted(df['location_name'].dropna().unique())
-select_all_states = st.sidebar.checkbox("Select All States", value=True)
-if select_all_states:
-    selected_states = st.sidebar.multiselect("States", all_states, default=all_states)
-else:
-    selected_states = st.sidebar.multiselect("States", all_states)
-
-# SaaS-style Agency Filter
-st.sidebar.markdown("### 🏢 Select Department(s)")
 all_departments = sorted(df['agency_name'].dropna().unique())
-select_all_departments = st.sidebar.checkbox("Select All Departments", value=True)
-if select_all_departments:
-    selected_departments = st.sidebar.multiselect("Departments", all_departments, default=all_departments)
-else:
-    selected_departments = st.sidebar.multiselect("Departments", all_departments)
+selected_agency = st.sidebar.selectbox("Filter by Agency (optional)", ["All"] + all_departments)
 
-# AI Filter
-ai_filter = st.sidebar.selectbox("AI Exposure Filter", options=["All", "AI-Exposed Only", "Non-AI"])
+# === KPI ROW ===
+st.markdown("""
+<div style="display: flex; justify-content: space-between; padding: 10px 0 20px 0;">
+    <div style="text-align: center; flex: 1;">
+        <h3 style="color: #3366cc;">\ud83c\udf93 Skill Categories</h3>
+        <h1 style="color: #111;">{}</h1>
+    </div>
+    <div style="text-align: center; flex: 1;">
+        <h3 style="color: #3366cc;">\ud83d\udc65 Available Talent</h3>
+        <h1 style="color: #111;">{:,}</h1>
+    </div>
+    <div style="text-align: center; flex: 1;">
+        <h3 style="color: #3366cc;">\ud83c\udfc6 Most Available Skill</h3>
+        <h1 style="color: #111;">{}</h1>
+    </div>
+</div>
+""".format(
+    df['skill'].nunique(),
+    df['employee_count_2024'].sum(),
+    df.groupby('skill')['employee_count_2024'].sum().idxmax()
+), unsafe_allow_html=True)
 
-# === APPLY FILTERS ===
-filtered_df = df[df['location_name'].isin(selected_states) & df['agency_name'].isin(selected_departments)]
-if ai_filter == "AI-Exposed Only":
-    filtered_df = filtered_df[filtered_df['ai_exposed'] == 1]
-elif ai_filter == "Non-AI":
-    filtered_df = filtered_df[filtered_df['ai_exposed'] == 0]
+# === TABS ===
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Talent Availability",
+    "Demand vs Supply",
+    "Layoff News",
+    "Federal Agency Staff",
+    "Decision Intelligence"
+])
 
-# === KPI METRICS ===
-st.subheader("📈 Key Workforce Metrics")
-col1, col2, col3 = st.columns(3)
-col1.metric("👥 Total Employees", int(filtered_df['employee_count_2024'].sum()))
-col2.metric("🚫 Estimated Layoffs", int(filtered_df['layoff_estimate'].sum()))
-col3.metric("🧑‍🤖 AI-Tagged Roles", int(filtered_df['ai_exposed'].sum()))
+with tab1:
+    st.subheader("\ud83d\udcca Talent Availability by Skill \u2014 US National View")
+    skill_view = df.copy()
+    if selected_agency != "All":
+        skill_view = df[df['agency_name'] == selected_agency]
 
-# === SKILLS INSIGHTS SECTION ===
-st.markdown("### 🔄 Skill Availability & Exposure")
-skill_summary = filtered_df.groupby('skill').agg({
-    'employee_count_2024': 'sum',
-    'layoff_estimate': 'sum',
-    'ai_exposed': 'sum'
-}).reset_index().sort_values(by='employee_count_2024', ascending=False).head(15)
+    skill_summary = skill_view.groupby('skill').agg({
+        'employee_count_2024': 'sum'
+    }).reset_index().sort_values(by='employee_count_2024', ascending=False)
 
-fig = px.bar(skill_summary, x='skill', y='employee_count_2024', color='ai_exposed',
-             title="Top 15 Skills by Availability and AI Exposure",
-             labels={"employee_count_2024": "Available Employees", "ai_exposed": "AI-Tagged"})
+    fig = px.bar(
+        skill_summary,
+        x='skill',
+        y='employee_count_2024',
+        color='employee_count_2024',
+        title="Available Talent by Skill Category",
+        labels={'employee_count_2024': 'Available Talent'},
+        height=450
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    st.dataframe(skill_summary.rename(columns={"skill": "Skill Category", "employee_count_2024": "Available Talent"}), use_container_width=True)
 
-st.plotly_chart(fig, use_container_width=True)
-st.dataframe(skill_summary, use_container_width=True)
+with tab2:
+    st.info("Demand vs Supply feature not implemented yet. Coming soon!")
 
-# === CHARTS SECTION ===
-st.markdown("### 🔺 Layoff Estimates by Department")
-barchart = filtered_df.groupby('agency_name')['layoff_estimate'].sum().sort_values(ascending=False).head(10)
-st.plotly_chart(px.bar(
-    barchart,
-    x=barchart.index,
-    y=barchart.values,
-    labels={'x': 'Agency', 'y': 'Layoff Estimate'},
-    title="Top 10 Agencies by Layoff Estimate"
-), use_container_width=True)
+with tab3:
+    st.info("Layoff news visualization will be added in future enhancements.")
 
-st.markdown("### 🤖 Top AI-Exposed Job Titles")
-ai_jobs = filtered_df[filtered_df['ai_exposed'] == 1].groupby('occupation_title')['employee_count_2024'].sum().sort_values(ascending=False).head(10)
-st.plotly_chart(px.bar(
-    ai_jobs,
-    x=ai_jobs.index,
-    y=ai_jobs.values,
-    labels={'x': 'Occupation', 'y': 'Employees'},
-    title="Top AI-Tagged Roles by Headcount"
-), use_container_width=True)
+with tab4:
+    st.info("Federal agency staffing summary will be integrated here.")
 
-# === LAYOFF TREND SECTION ===
-st.markdown("### 📉 Layoff News Trend Over Time")
-if 'date' in layoff_signals.columns:
-    layoff_signals['date'] = pd.to_datetime(layoff_signals['date'], dayfirst=True)
-    layoff_signals['estimated_layoff'] = pd.to_numeric(layoff_signals['estimated_layoff'], errors='coerce')
-    trend = layoff_signals.groupby(layoff_signals['date'].dt.to_period("M"))['estimated_layoff'].sum().reset_index()
-    trend['date'] = trend['date'].astype(str)
-    st.line_chart(trend.rename(columns={'estimated_layoff': 'Layoffs'}).set_index('date'))
-else:
-    st.warning("\u26a0\ufe0f 'date' column not found in layoff_signals.csv. Please check column headers.")
-
-# === FOOTER ===
-st.markdown("---")
-st.caption("Built with Streamlit | Data: US Federal Workforce & Layoffs | Powered by Plotly")
+with tab5:
+    st.info("Decision intelligence recommendations under development.")
