@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import os
+import altair as alt
 
 st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard", layout="wide")
 
@@ -98,9 +99,20 @@ with t1:
 with t2:
     st.subheader(f"Layoff News in {selected_state}")
     df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+
     if df_signal_filtered.empty:
         st.info("No layoff news found for the selected state.")
     else:
+        df_signal_filtered['date'] = pd.to_datetime(df_signal_filtered['date'], errors='coerce')
+        chart = alt.Chart(df_signal_filtered).mark_bar().encode(
+            x=alt.X('date:T', title='Date'),
+            y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
+            color=alt.Color('agency_name:N', title='Agency'),
+            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
+        ).properties(title="Layoff Events Timeline")
+        st.altair_chart(chart, use_container_width=True)
+
+        st.markdown("**Layoff News Articles**")
         st.dataframe(df_signal_filtered[["date", "agency_name", "estimated_layoff", "article_title", "source_link"]], use_container_width=True)
 
 with t3:
