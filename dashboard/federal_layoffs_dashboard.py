@@ -72,7 +72,7 @@ df_filtered = df[df['state'] == selected_state]
 st.markdown("""
 <style>
     .main-title {
-        font-family: 'Segoe UI', sans-serif;
+        font-family: 'Playfair Display', serif;
         background-color: #003366;
         padding: 1rem 1.2rem;
         color: white;
@@ -91,7 +91,7 @@ st.markdown("""
 </style>
 <div class='main-title'>
     <img src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
-    Federal Layoffs & Skills Intelligence Dashboard
+    <span>Federal Layoffs & Skills Intelligence Dashboard</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -169,3 +169,15 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# === Tabs Placeholder ===
+tab1, tab2, tab3 = st.tabs(["📊 Top Skills & Jobs", "📰 Layoff News", "🔍 Similar Occupations"])
+
+with tab1:
+    st.info("This section will show the top skills and occupations by estimated layoffs.")
+
+with tab2:
+    st.info("This section will display news articles and events related to layoffs.")
+
+with tab3:
+    st.info("This section will allow exploration of similar occupations by role.")
