@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-df = pd.read_csv("data/dashboard_ai_tagged.csv")
+df = pd.read_csv("data/dashboard_ai_tagged_renamed.csv.gz", compression='gzip')
 df.columns = df.columns.str.strip().str.lower()
 
 # AI skill tagging
