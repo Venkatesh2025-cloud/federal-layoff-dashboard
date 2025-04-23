@@ -50,6 +50,10 @@ for d in [df, df_summary, df_signal]:
 df_sim.columns = df_sim.columns.str.lower().str.strip()
 df_sim.index = df_sim.index.str.lower().str.strip()
 
+# Normalize state names
+df['state'] = df['state'].str.strip().str.title()
+df_signal['state'] = df_signal['state'].str.strip().str.title()
+
 # === Sidebar Filters ===
 st.sidebar.header("📍 Filter by State")
 state_list = sorted(df['state'].unique())
