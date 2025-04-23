@@ -94,7 +94,7 @@ st.markdown("""
     display: flex;
     justify-content: space-between;
     gap: 1.0rem;
-    margin-top: 1.0rem; /* Increased to push the KPI cards further down */
+    margin-top: 1.0rem;
     margin-bottom: 1.0rem;
 }
 .kpi-card {
@@ -141,6 +141,13 @@ st.markdown("""
     color: #6b7280;
     font-family: 'Inter', sans-serif;
 }
+.alt-container {
+    background-color: #f9fafb;
+    padding: 1.2rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    margin-top: 1rem;
+}
 </style>
 <div class='header-strip'>
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
@@ -148,6 +155,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# === KPI Cards ===
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card workforce">
@@ -179,3 +187,32 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# === Similar Occupation Explorer ===
+with st.container():
+    st.markdown("""
+    <div class='alt-container'>
+        <h4 style="margin-bottom: 0.2rem;">🔁 Explore Alternative Career Paths</h4>
+        <p style="color:#4b5563; font-size: 0.88rem; margin-bottom: 1rem;">
+        Based on skills and job function similarities across federal occupations.
+        </p>
+    """, unsafe_allow_html=True)
+
+    selected_occ = st.selectbox("Choose an occupation to explore similar roles", sorted(df['occupation'].unique()), key="similar_occ")
+    selected_key = selected_occ.lower().strip()
+
+    if selected_key in df_sim.index:
+        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+        similar_df.columns = ['occupation', 'similarity']
+        fig_sim = px.bar(similar_df, x='similarity', y='occupation', orientation='h',
+                         title=f"👯 Similar to: {selected_occ}",
+                         color='similarity',
+                         text_auto=True,
+                         color_continuous_scale=px.colors.sequential.Oranges)
+        fig_sim.update_layout(xaxis_title="Similarity Score", yaxis_title="Occupation",
+                              plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(showgrid=False))
+        st.plotly_chart(fig_sim, use_container_width=True)
+    else:
+        st.markdown("🚫 *No similar occupations found for this selection.*")
+
+    st.markdown("</div>", unsafe_allow_html=True)
