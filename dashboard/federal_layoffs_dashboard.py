@@ -78,17 +78,17 @@ st.markdown("""
     background-color: #003366;
     padding: 0.3rem 1.2rem;
     border-radius: 10px;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
     margin-top: 0.3rem;
     color: white;
     font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     font-weight: 600;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    border: 2px solid #00264d;
+    border: 3px solid #00264d;
 }
 .header-strip .logo {
-    height: 42px;
+    height: 46px;
 }
 .kpi-container {
     display: flex;
