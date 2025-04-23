@@ -86,7 +86,7 @@ st.markdown("""
     }
     .main-title img {
         height: 32px;
-        vertical-align: middle;
+        vertical-align: left;
     }
 </style>
 <div class='main-title'>
