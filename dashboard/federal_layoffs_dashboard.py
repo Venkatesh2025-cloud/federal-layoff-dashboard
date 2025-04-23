@@ -87,7 +87,7 @@ st.markdown("""
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .header-strip .logo {
-    height: 36px;
+    height: 34px;
 }
 </style>
 <div class='header-strip'>
