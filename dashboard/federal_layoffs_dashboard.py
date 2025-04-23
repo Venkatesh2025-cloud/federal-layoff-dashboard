@@ -1,70 +1,109 @@
-import streamlit as st
+# federal_layoffs_dashboard.py
+
 import pandas as pd
+import streamlit as st
 import plotly.express as px
+import os
 
-# ---------- SETUP ----------
-st.set_page_config("Layoffs & Skills Intelligence", layout="wide")
+st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard", layout="wide")
 
-# ---------- PLACEHOLDER DATA FOR DEMO ----------
-skills_df = pd.DataFrame({
-    "skill": ["Data Analysis", "Nursing", "Project Management", "SQL", "AI Ethics"],
-    "estimate_layoff": [1200, 950, 875, 800, 760],
-    "color": ["#1f77b4", "#ff7f0e", "#2ca02c", "#9467bd", "#d62728"]
-})
+# === Load Datasets ===
+@st.cache_data
+def load_data():
+    df = pd.read_csv("data/dashboard_ai_tagged_cleaned.csv")
+    df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
+    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
+    df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
+    return df, df_summary, df_signal, df_sim
 
-occupations_df = pd.DataFrame({
-    "occupation": ["Data Scientist", "Nurse", "Project Manager", "SQL Developer", "Ethics Officer"],
-    "estimate_layoff": [2200, 1700, 1500, 1100, 890]
-})
+# Validate all required files exist
+required_files = [
+    "data/dashboard_ai_tagged_cleaned.csv",
+    "data/dashboard_agency_state_summary.csv",
+    "data/federal_layoff_signal.csv",
+    "data/occupation_similarity_matrix.csv"
+]
 
-layoff_df = pd.DataFrame({
-    "date": pd.date_range(start="2025-01-01", periods=6, freq="M"),
-    "layoffs": [1000, 1400, 900, 1300, 1700, 1200]
-})
+missing = [f for f in required_files if not os.path.exists(f)]
+if missing:
+    st.error(f"Missing required file(s): {', '.join(missing)}")
+    st.stop()
 
-similar_df = pd.DataFrame({
-    "occupation": ["Data Engineer", "ML Engineer", "Statistician", "BI Analyst", "AI Researcher"],
-    "similarity": [0.91, 0.89, 0.85, 0.83, 0.81]
-})
+# Load data
+try:
+    df, df_summary, df_signal, df_sim = load_data()
+except Exception as e:
+    st.error(f"Failed to load datasets: {e}")
+    st.stop()
 
-# ---------- HEADER ----------
+# Clean column names
+for d in [df, df_summary, df_signal]:
+    d.columns = d.columns.str.lower().str.strip().str.replace(" ", "_")
+
+df_sim.columns = df_sim.columns.str.lower().str.strip()
+df_sim.index = df_sim.index.str.lower().str.strip()
+
+# === Sidebar Filters ===
+st.sidebar.header("📍 Filter by State")
+state_list = sorted(df['state'].unique())
+selected_state = st.sidebar.selectbox("State", state_list)
+
+# === Apply Filter ===
+df_filtered = df[df['state'] == selected_state]
+
+# === Header ===
 st.markdown("""
-    <h1 style='text-align: center; background-color:#003366; color:white; padding:0.75rem; border-radius:8px;'>
-        Federal Layoffs & Skills Intelligence
+    <h1 style='text-align: center; background-color: #003366; color: white; padding: 1rem; border-radius: 8px;'>
+        Federal Layoffs & Skills Intelligence Dashboard
     </h1>
 """, unsafe_allow_html=True)
 
-# ---------- FILTERS ----------
-st.sidebar.header("📍 Filters")
-state = st.sidebar.selectbox("Select State", ["Texas", "California", "New York"])
-agency = st.sidebar.selectbox("Select Agency", ["All", "Veterans Health", "Social Security", "Dept. of Treasury"])
+# === KPI Section ===
+k1, k2, k3 = st.columns(3)
+k1.metric("👥 Total Workforce", f"{df_filtered['talent_size'].sum():,}")
+k2.metric("⚠️ Estimated Layoffs", f"{df_filtered['estimate_layoff'].sum():,}")
+k3.metric("🔧 Unique Skills", f"{df_filtered['skill'].nunique():,}")
 
-# ---------- SECTION 1: TOP SKILLS AT RISK ----------
-st.subheader("🧠 Top 5 Skills at Risk (Prioritized View)")
-fig_skills = px.bar(skills_df, x="skill", y="estimate_layoff", color="color", title="Top Skills by Estimated Layoffs",
-                    color_discrete_map="identity", labels={"estimate_layoff": "Est. Layoffs"})
-fig_skills.update_layout(showlegend=False)
-st.plotly_chart(fig_skills, use_container_width=True)
+# === Tabs ===
+t1, t2, t3 = st.tabs(["🧠 Federal Layoff Intelligence", "📰 Layoff News", "🔁 Similar Occupations (Optional)"])
 
-# ---------- SECTION 2: TOP OCCUPATIONS AT RISK ----------
-st.subheader("💼 Top 5 Occupations by Estimated Layoffs")
-fig_jobs = px.bar(occupations_df, x="occupation", y="estimate_layoff", title="Top Occupations at Risk",
-                  color_discrete_sequence=px.colors.sequential.Blues_r)
-st.plotly_chart(fig_jobs, use_container_width=True)
+with t1:
+    st.subheader(f"Top 5 Skills at Risk in {selected_state}")
+    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
+    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
+                        title="Top Skills by Estimated Layoffs",
+                        color="estimate_layoff",
+                        color_continuous_scale=px.colors.sequential.Blues_r)
+    st.plotly_chart(fig_skills, use_container_width=True)
 
-# ---------- SECTION 3: LAYOFF TREND EXPLORATION ----------
-st.subheader("📉 Federal Layoff Trends Over Time")
-st.markdown("Use this section to explore layoff timelines across states and agencies.")
-fig_line = px.line(layoff_df, x="date", y="layoffs", markers=True, title="Estimated Layoffs by Month")
-st.plotly_chart(fig_line, use_container_width=True)
+    st.subheader("Top 5 Occupations by Estimated Layoffs")
+    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
+    fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
+                     title="Top Occupations by Estimated Layoffs",
+                     color="estimate_layoff",
+                     color_continuous_scale=px.colors.sequential.Blues_r)
+    st.plotly_chart(fig_jobs, use_container_width=True)
 
-# ---------- SECTION 4: SIMILAR OCCUPATIONS (Optional) ----------
-with st.expander("🔁 Show Similar Occupations (Optional)"):
-    st.markdown("*Use this view to identify roles with skill overlap or redeployment potential.*")
-    fig_sim = px.bar(similar_df, x="occupation", y="similarity", title="Top Similar Occupations",
-                     color="similarity", color_continuous_scale="blues")
-    st.plotly_chart(fig_sim, use_container_width=True)
+with t2:
+    st.subheader(f"Layoff News in {selected_state}")
+    df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+    st.dataframe(df_signal_filtered[["date", "agency_name", "estimated_layoff", "article_title", "source_link"]], use_container_width=True)
 
-# ---------- FOOTER ----------
+with t3:
+    st.subheader("Explore Similar Occupations (Optional)")
+    selected_occ = st.selectbox("Choose an occupation", sorted(df['occupation'].unique()))
+    selected_key = selected_occ.lower().strip()
+    if selected_key in df_sim.index:
+        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+        similar_df.columns = ['occupation', 'similarity']
+        fig_sim = px.bar(similar_df, x='occupation', y='similarity',
+                         title=f"Most Similar to {selected_occ}",
+                         color='similarity',
+                         color_continuous_scale=px.colors.sequential.Blues_r)
+        st.plotly_chart(fig_sim, use_container_width=True)
+    else:
+        st.info("Similarity data not available for this occupation.")
+
+# === Footer ===
 st.markdown("---")
-st.caption("Dashboard structure inspired by Vijay’s feedback • Built with ❤️ for human clarity.")
+st.caption("Built with ❤️ by your data + design team. Data source: Draup")
