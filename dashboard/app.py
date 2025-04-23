@@ -26,7 +26,7 @@ def load_data():
 
 # Validate files exist
 required_files = [
-    "data/dashboard_ai_tagged.csv.gz",
+    "data/dashboard_ai_tagged_slim.csv.gz",
     "data/agency_department_map.csv",
     "data/dashboard_agency_state_summary.csv",
     "data/federal_layoff_signal.csv",
