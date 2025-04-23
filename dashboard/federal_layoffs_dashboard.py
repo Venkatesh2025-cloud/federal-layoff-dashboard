@@ -94,7 +94,7 @@ st.markdown("""
     display: flex;
     justify-content: space-between;
     gap: 1.0rem;
-    margin-top: 1.0rem;
+    margin-top: 1.2rem;
     margin-bottom: 1.0rem;
 }
 .kpi-card {
@@ -178,7 +178,7 @@ st.markdown(f"""
     </div>
     <div class="kpi-card skills">
         <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" style="width: 24px; height: 24px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
             <h4>{df_filtered['skill'].nunique():,}</h4>
@@ -192,23 +192,24 @@ st.markdown(f"""
 with st.container():
     st.markdown("""
     <div class='alt-container'>
-        <h4 style="margin-bottom: 0.2rem;">🔁 Explore Alternative Career Paths</h4>
+        <h4 style="margin-bottom: 0.2rem;">🧠 Explore Alternative Career Paths</h4>
         <p style="color:#4b5563; font-size: 0.88rem; margin-bottom: 1rem;">
         Based on skills and job function similarities across federal occupations.
         </p>
     """, unsafe_allow_html=True)
 
-    selected_occ = st.selectbox("Choose an occupation to explore similar roles", sorted(df['occupation'].unique()), key="similar_occ")
+    selected_occ = st.selectbox("Choose an occupation to explore similar roles", sorted(df['occupation'].str.title().unique()), key="similar_occ")
     selected_key = selected_occ.lower().strip()
 
     if selected_key in df_sim.index:
         similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
-        similar_df.columns = ['occupation', 'similarity']
-        fig_sim = px.bar(similar_df, x='similarity', y='occupation', orientation='h',
-                         title=f"👯 Similar to: {selected_occ}",
-                         color='similarity',
+        similar_df.columns = ['Occupation', 'Similarity']
+        similar_df['Occupation'] = similar_df['Occupation'].str.title()
+        fig_sim = px.bar(similar_df, x='Similarity', y='Occupation', orientation='h',
+                         title=f"👥 Similar to: {selected_occ}",
+                         color='Similarity',
                          text_auto=True,
-                         color_continuous_scale=px.colors.sequential.Oranges)
+                         color_continuous_scale=px.colors.sequential.Teal)
         fig_sim.update_layout(xaxis_title="Similarity Score", yaxis_title="Occupation",
                               plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(showgrid=False))
         st.plotly_chart(fig_sim, use_container_width=True)
