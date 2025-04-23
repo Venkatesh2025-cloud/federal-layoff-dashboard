@@ -339,28 +339,37 @@ with tab3:
         st.warning("Similarity data not available for this occupation.")
 
 
-import plotly.express as px
+# === U.S. Layoff Map View ===
+st.markdown("""
+<div style='margin-top: 2rem; font-size: 1.1rem; font-weight: 600; font-family: "Inter", sans-serif; color: #334155;'>
+🌐 Geographic View of Layoffs by State
+</div>
+""", unsafe_allow_html=True)
 
-# Ensure 'df_signal' is available and contains 'state' and 'estimated_layoff'
-df_state_summary = df_signal.groupby('state', as_index=False)['estimated_layoff'].sum()
-df_state_summary = df_state_summary.dropna(subset=['state', 'estimated_layoff'])
+# Aggregate estimated layoffs by state
+map_data = df_signal.dropna(subset=['state', 'estimated_layoff'])
+map_data_grouped = map_data.groupby('state', as_index=False)['estimated_layoff'].sum()
 
-fig_map = px.scatter_geo(df_state_summary,
+# Ensure 'state' is full 2-letter abbreviation or full name
+# For best results, use state abbreviations (e.g., AL, CA, TX)
+fig_map = px.scatter_geo(map_data_grouped,
                          locations="state",
                          locationmode="USA-states",
                          scope="usa",
                          size="estimated_layoff",
                          color="estimated_layoff",
                          hover_name="state",
-                         title="Layoffs by State (Bubble Size = Estimated Layoffs)",
+                         size_max=40,
                          color_continuous_scale="Reds",
-                         size_max=40)
+                         title="Estimated Layoffs by State")
 
 fig_map.update_layout(
     geo=dict(bgcolor='rgba(0,0,0,0)'),
-    title_font=dict(family='Inter', size=16, color='#0f172a'),
+    font=dict(family="Inter", size=13, color="#0f172a"),
+    title_font=dict(size=16),
     margin=dict(t=40, b=20)
 )
 
 st.plotly_chart(fig_map, use_container_width=True)
+
 
