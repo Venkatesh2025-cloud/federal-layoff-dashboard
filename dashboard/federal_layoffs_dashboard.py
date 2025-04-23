@@ -71,25 +71,17 @@ df_filtered = df[df['state'] == selected_state]
 # === Header with logo inside title ===
 st.markdown("""
 <style>
-    .main-title {
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #003366;
-        padding: 1rem 2rem;
-        color: white;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-    }
-    .main-title img {
-        height: 36px;
-        vertical-align: middle;
-        margin-bottom: 4px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+html, body, .block-container, .stText, .stMarkdown, div, span {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 400;
+}
+[data-testid="stMetricValue"] {
+    font-family: 'Inter', sans-serif !important;
+}
+</style>
+""", unsafe_allow_html=True)
 </style>
 
 <div class='main-title'>
