@@ -75,14 +75,14 @@ k3.metric("🔧 Unique Skills", f"{df_filtered['skill'].nunique():,}")
 t1, t2, t3 = st.tabs(["🧠 Federal Layoff Intelligence", "📰 Layoff News", "🔁 Similar Occupations (Optional)"])
 
 with t1:
-    st.subheader(f"Top 5 Skills at Risk in {selected_state}")
+    st.subheader(f"Top 10 Skills at Risk in {selected_state}")
     top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
     fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
                         title="Top Skills by Estimated Layoffs",
                         color_discrete_sequence=["#ddeeff", "#a9d0f5", "#7ec0ee", "#3b9dd1", "#007acc"])
     st.plotly_chart(fig_skills, use_container_width=True)
 
-    st.subheader("Top 5 Occupations by Estimated Layoffs")
+    st.subheader("Top 10 Occupations by Estimated Layoffs")
     top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
     fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
                      title="Top Occupations by Estimated Layoffs",
