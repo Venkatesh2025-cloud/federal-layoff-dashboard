@@ -1,154 +1,74 @@
-# federal_layoffs_dashboard.py
-
-import pandas as pd
 import streamlit as st
-import plotly.express as px
-import os
+import pandas as pd
 import altair as alt
+from datetime import datetime
 
-st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard", layout="wide")
+# ----------- HEADER -----------
+st.set_page_config(page_title="Vijay's Dashboard", layout="wide")
+st.title("Hi Vijay 👋, here’s what’s happening today.")
 
-# === Safe CSV Reader ===
-def safe_read_csv(path):
-    try:
-        return pd.read_csv(path, encoding="utf-8")
-    except UnicodeDecodeError:
-        return pd.read_csv(path, encoding="latin1")
+col1, col2, col3 = st.columns([4, 2, 1])
+with col1:
+    user_filter = st.text_input("User Filter", placeholder="Search or filter by user persona")
+with col2:
+    date_range = st.date_input("Select Date Range", [datetime(2023, 1, 1), datetime.today()])
+with col3:
+    st.button("🔄 Refresh")
 
-# === Load Datasets ===
-@st.cache_data
-def load_data():
-    df = safe_read_csv("data/dashboard_ai_tagged_cleaned.csv")
-    df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
-    df_signal = safe_read_csv("data/federal_layoff_signal.csv")
-    df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
-    return df, df_summary, df_signal, df_sim
+# ----------- KPI CARDS -----------
+st.markdown("### 🔢 Key Performance Indicators")
+kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+kpi1.metric("Revenue", "₹12.5M", "↑ 5%")
+kpi2.metric("Active Users", "4,320", "↓ 2%")
+kpi3.metric("Churn Rate", "1.1%", "-")
+kpi4.metric("Conversion", "2.7%", "↑ 0.3%")
 
-# Validate all required files exist
-required_files = [
-    "data/dashboard_ai_tagged_cleaned.csv",
-    "data/dashboard_agency_state_summary.csv",
-    "data/federal_layoff_signal.csv",
-    "data/occupation_similarity_matrix.csv"
-]
+# ----------- TABBED CONTENT -----------
+st.markdown("### 📊 Insights Dashboard")
 
-missing = [f for f in required_files if not os.path.exists(f)]
-if missing:
-    st.error(f"Missing required file(s): {', '.join(missing)}")
-    st.stop()
+tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "🧭 Segment Analysis", "🌍 Geographic View", "⚙️ Operational Insights"])
 
-# Load data
-try:
-    df, df_summary, df_signal, df_sim = load_data()
-except Exception as e:
-    st.error(f"Failed to load datasets: {e}")
-    st.stop()
+with tab1:
+    st.subheader("Engagement Trends Over Time")
+    st.caption("Spot anomalies, surges, or drop-offs in performance")
+    data = pd.DataFrame({
+        "date": pd.date_range(start="2024-01-01", periods=100),
+        "value": pd.Series(range(100)).apply(lambda x: x + (x%7)*2)
+    })
+    line_chart = alt.Chart(data).mark_line().encode(x='date', y='value')
+    st.altair_chart(line_chart, use_container_width=True)
 
-# Clean column names
-for d in [df, df_summary, df_signal]:
-    d.columns = d.columns.str.lower().str.strip().str.replace(" ", "_")
+with tab2:
+    st.subheader("User Segment Analysis")
+    st.caption("Identify user behaviors by persona or cohort")
+    st.selectbox("Filter by Persona", options=["All", "New Users", "Returning Users", "Churn Risk"])
+    st.bar_chart([3, 6, 2, 4])
 
-df_sim.columns = df_sim.columns.str.lower().str.strip()
-df_sim.index = df_sim.index.str.lower().str.strip()
+with tab3:
+    st.subheader("Geographic Distribution")
+    st.caption("Where are users coming from?")
+    st.map(pd.DataFrame({
+        'lat': [19.0760, 28.6139, 13.0827],
+        'lon': [72.8777, 77.2090, 80.2707]
+    }))
 
-# Normalize state names
-df['state'] = df['state'].str.strip().str.title()
-df_signal['state'] = df_signal['state'].str.strip().str.title()
+with tab4:
+    st.subheader("Operational Insights")
+    st.caption("Backend/API/system health at a glance")
+    st.bar_chart([10, 20, 15, 35])
 
-# Convert date column and clean estimated_layoff
-df_signal['date'] = pd.to_datetime(df_signal['date'], errors='coerce')
-df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].replace("Unspecified number", pd.NA), errors='coerce')
+# ----------- DATA TABLE -----------
+st.markdown("### 🔍 Advanced Table View")
 
-# === Sidebar Filters ===
-st.sidebar.header("📍 Filter by State")
-state_list = sorted(df['state'].unique())
-selected_state = st.sidebar.selectbox("State", state_list)
+with st.expander("🔧 Filter Panel"):
+    st.multiselect("Select Columns", options=["User ID", "Event Type", "Timestamp", "Location"])
+    st.checkbox("Show only anomalies")
 
-# === Apply Filter ===
-df_filtered = df[df['state'] == selected_state]
+st.download_button("Download CSV", data.to_csv(index=False), file_name="export.csv")
 
-# === Header ===
-st.markdown("""
-    <h1 style='text-align: center; background-color: #003366; color: white; padding: 1rem; border-radius: 8px;'>
-        Federal Layoffs & Skills Intelligence Dashboard
-    </h1>
-""", unsafe_allow_html=True)
+st.dataframe(data.tail(10), use_container_width=True)
 
-# === KPI Section ===
-st.markdown("""
-<div style="display: flex; justify-content: space-around; font-family: 'Inter', sans-serif;">
-    <div style="background: #f0fdf4; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #34a853;">{:,}</div>
-        <div style="color: #444; font-size: 0.95rem;">Total Workforce</div>
-    </div>
-    <div style="background: #fff7ed; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #f9a825;">{:,}</div>
-        <div style="color: #444; font-size: 0.95rem;">Estimated Layoffs</div>
-    </div>
-    <div style="background: #e3f2fd; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #1e88e5;">{:,}</div>
-        <div style="color: #444; font-size: 0.95rem;">Unique Skills</div>
-    </div>
-</div>
-""".format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
-
-# === Tabs ===
-t1, t2, t3 = st.tabs([
-    "🧠 Federal Layoff Intelligence",
-    "📰 Layoff News",
-    "🟠 Similar Occupations (Optional)"
-])
-
-with t1:
-    st.subheader(f"Top 10 Skills at Risk in {selected_state}")
-    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
-                        title="Top Skills by Estimated Layoffs",
-                        color="estimate_layoff",
-                        color_continuous_scale=px.colors.sequential.Tealgrn)
-    st.plotly_chart(fig_skills, use_container_width=True)
-
-    st.subheader("Top 10 Occupations by Estimated Layoffs")
-    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
-                     title="Top Occupations by Estimated Layoffs",
-                     color="estimate_layoff",
-                     color_continuous_scale=px.colors.sequential.Blues_r)
-    st.plotly_chart(fig_jobs, use_container_width=True)
-
-with t2:
-    st.subheader(f"Layoff News in {selected_state}")
-    df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, na=False)]
-
-    if df_signal_filtered.empty:
-        st.info("No layoff news found for the selected state.")
-    else:
-        chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
-            x=alt.X('date:T', title='Date'),
-            y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
-            color=alt.Color('agency_name:N', title='Agency'),
-            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
-        ).properties(title="Layoff Events Timeline")
-        st.altair_chart(chart, use_container_width=True)
-
-        st.markdown("**Layoff News Articles**")
-        st.dataframe(df_signal_filtered[["date", "agency_name", "estimated_layoff", "article_title", "source_link"]], use_container_width=True)
-
-with t3:
-    st.subheader("Explore Similar Occupations (Optional)")
-    selected_occ = st.selectbox("Choose an occupation", sorted(df['occupation'].unique()))
-    selected_key = selected_occ.lower().strip()
-    if selected_key in df_sim.index:
-        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
-        similar_df.columns = ['occupation', 'similarity']
-        fig_sim = px.bar(similar_df, x='occupation', y='similarity',
-                         title=f"Most Similar to {selected_occ}",
-                         color='similarity',
-                         color_continuous_scale=px.colors.sequential.Oranges)
-        st.plotly_chart(fig_sim, use_container_width=True)
-    else:
-        st.info("Similarity data not available for this occupation.")
-
-# === Footer ===
+# ----------- FOOTER -----------
 st.markdown("---")
-st.caption("Built with ❤️ by your data + design team. Data source: Draup")
+st.caption("Feedback / Version 1.0 / Powered by Draup")
+
