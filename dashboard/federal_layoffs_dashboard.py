@@ -6,7 +6,8 @@ import plotly.express as px
 import os
 
 st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wide")
- === Safe CSV Reader with Encoding Fallback ===
+
+# === Safe CSV Reader with Encoding Fallback ===
 def safe_read_csv(path):
     try:
         return pd.read_csv(path, encoding="utf-8")
@@ -17,11 +18,12 @@ def safe_read_csv(path):
 @st.cache_data
 def load_data():
     df_ai = pd.read_csv("data/dashboard_ai_tagged_slim.csv.gz", compression="gzip")
-    df_agency = pd.read_csv("data/agency_department_map.csv")
-    df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
-    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
-    df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
-    return df_ai, df_dept_map, df_summary, df_signal, df_sim
+    df_agency = safe_read_csv("data/agency_department_map.csv")
+    df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
+    df_signal = safe_read_csv("data/federal_layoff_signal.csv")
+    df_sim = safe_read_csv("data/occupation_similarity_matrix.csv")
+    df_sim.set_index(df_sim.columns[0], inplace=True)
+    return df_ai, df_agency, df_summary, df_signal, df_sim
 
 # Validate files exist
 required_files = [
