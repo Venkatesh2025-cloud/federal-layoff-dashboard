@@ -17,7 +17,7 @@ def safe_read_csv(path):
 # === Load from Local Directory ===
 @st.cache_data
 def load_data():
-    df_ai = pd.read_csv("data/dashboard_ai_tagged_slim.csv.gz", compression="gzip")
+    df_ai = pd.read_csv("data/dashboard_ai_tagged_renamed.csv.gz", compression="gzip")
     df_agency = safe_read_csv("data/agency_department_map.csv")
     df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
     df_signal = safe_read_csv("data/federal_layoff_signal.csv")
@@ -27,7 +27,7 @@ def load_data():
 
 # Validate files exist
 required_files = [
-    "data/dashboard_ai_tagged_slim.csv.gz",
+    "data/dashboard_ai_tagged_renamed.csv.gz",
     "data/agency_department_map.csv",
     "data/dashboard_agency_state_summary.csv",
     "data/federal_layoff_signal.csv",
@@ -52,9 +52,6 @@ for df in [df_ai, df_dept_map, df_summary, df_signal]:
 
 df_sim.columns = df_sim.columns.str.lower().str.strip()
 df_sim.index = df_sim.index.str.lower().str.strip()
-
-# === Rename AI Exposure Column ===
-df_ai = df_ai.rename(columns={"ai_exposure": "ai_impact_flag"})
 
 # === Merge Department Mapping ===
 df_ai = df_ai.merge(df_dept_map.rename(columns={"agency_department": "department"}), on="agency_name", how="left")
@@ -82,7 +79,7 @@ k1, k2, k3, k4 = st.columns(4)
 k1.metric("👥 Total Workforce", f"{data_filtered['employee_count_2024'].sum():,}")
 k2.metric("⚠️ Estimated Layoffs", f"{data_filtered['estimate_layoff'].sum():,}")
 k3.metric("🔧 Unique Skills", f"{data_filtered['skill'].nunique():,}")
-k4.metric("🤖 AI Exposure Count", f"{data_filtered['ai_impact_flag'].sum():,}")
+k4.metric("🤖 AI Impact Count", f"{data_filtered['ai_impact_flag'].sum():,}")
 
 # === Tabs ===
 t1, t2, t3, t4 = st.tabs(["📊 Skills", "💼 Occupations", "📰 Layoff Signals", "🔄 Similar Occupations"])
