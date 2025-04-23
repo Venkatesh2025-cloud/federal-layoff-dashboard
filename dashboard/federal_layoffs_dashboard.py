@@ -90,63 +90,17 @@ st.markdown("""
 .header-strip .logo {
     height: 46px;
 }
-.kpi-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 1.0rem;
-    margin-top: 2rem;
-    margin-bottom: 1.0rem;
-}
-.kpi-card {
-    flex: 1;
-    background: rgba(240, 248, 255, 0.45);
-    border-left: 6px solid transparent;
-    border-radius: 14px;
-    padding: 1.2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
-}
-.kpi-card.workforce { background-color: #ecfdf5; border-left-color: #34d399; }
-.kpi-card.layoffs { background-color: #fefce8; border-left-color: #facc15; }
-.kpi-card.skills { background-color: #eff6ff; border-left-color: #60a5fa; }
-.kpi-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    font-size: 1.3rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f3f4f6;
-}
-.kpi-text h4 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
-    font-family: 'Inter', sans-serif;
-}
-.kpi-text p {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #6b7280;
-    font-family: 'Inter', sans-serif;
-}
 .alt-container {
     background-color: #f9fafb;
     padding: 1.2rem 1.5rem;
     border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     margin-top: 1rem;
+}
+.row-2x {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
 }
 </style>
 <div class='header-strip'>
@@ -155,68 +109,62 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === KPI Cards ===
-st.markdown(f"""
-<div class="kpi-container">
-    <div class="kpi-card workforce">
-        <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" style="width: 24px; height: 24px;">
-        </div>
-        <div class="kpi-text">
-            <h4>{df_filtered['talent_size'].sum():,}</h4>
-            <p>Total Workforce</p>
-        </div>
-    </div>
-    <div class="kpi-card layoffs">
-        <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/595/595067.png" style="width: 24px; height: 24px;">
-        </div>
-        <div class="kpi-text">
-            <h4>{df_filtered['estimate_layoff'].sum():,}</h4>
-            <p>Estimated Layoffs</p>
-        </div>
-    </div>
-    <div class="kpi-card skills">
-        <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" style="width: 24px; height: 24px;">
-        </div>
-        <div class="kpi-text">
-            <h4>{df_filtered['skill'].nunique():,}</h4>
-            <p>Unique Skills</p>
-        </div>
-    </div>
-</div>
+# === Layoff Timeline & News Feed ===
+st.markdown("""
+<div class='alt-container'>
+<h4 style="margin-bottom: 0.5rem;">
+    🗞️ Federal Layoff Events Timeline
+</h4>
 """, unsafe_allow_html=True)
 
-# === Similar Occupation Explorer ===
-with st.container():
-    st.markdown("""
-    <div class='alt-container'>
-        <h4 style="margin-bottom: 0.2rem;">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png" width="20" style="margin-right:8px;vertical-align:middle;">
-            Explore Alternative Career Paths
-        </h4>
-        <p style="color:#4b5563; font-size: 0.88rem; margin-bottom: 1rem;">
-        Based on skills and job function similarities across federal occupations.
-        </p>
-    """, unsafe_allow_html=True)
+df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+if not df_signal_filtered.empty:
+    chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
+        x=alt.X('date:T', title='Date'),
+        y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
+        color=alt.Color('agency_name:N', title='Agency'),
+        tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
+    ).properties(title="Layoff Timeline", height=280)
+    st.altair_chart(chart, use_container_width=True)
 
-    selected_occ = st.selectbox("Choose an occupation to explore similar roles", sorted(df['occupation'].str.title().unique()), key="similar_occ")
-    selected_key = selected_occ.lower().strip()
+    st.markdown("### 📰 Layoff News Articles")
+    for _, row in df_signal_filtered.iterrows():
+        with st.expander(f"📅 {row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
+            st.markdown(f"**📝 Title:** {row['article_title']}")
+            st.markdown(f"**📊 Estimated Layoffs:** {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
+            st.markdown(f"[🔗 Source Link]({row['source_link']})")
+else:
+    st.info("🚫 No layoff events found for the selected state.")
 
-    if selected_key in df_sim.index:
-        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
-        similar_df.columns = ['Occupation', 'Similarity']
-        similar_df['Occupation'] = similar_df['Occupation'].str.title()
-        fig_sim = px.bar(similar_df, x='Similarity', y='Occupation', orientation='h',
-                         title=f"Similar to: {selected_occ}",
-                         color='Similarity',
-                         text_auto='.2f',
-                         color_continuous_scale=px.colors.sequential.Blues)
-        fig_sim.update_layout(xaxis_title="Similarity Score", yaxis_title="Occupation",
-                              plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(showgrid=False), height=480)
-        st.plotly_chart(fig_sim, use_container_width=True)
-    else:
-        st.markdown("🚫 *No similar occupations found for this selection.*")
+st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+# === Top Skills & Occupations ===
+st.markdown("""
+<div class='alt-container'>
+<h4 style="margin-bottom: 0.5rem;">
+    📊 Top Skills & Top Occupations by Estimated Layoffs
+</h4>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    fig1 = px.bar(top_skills, x="estimate_layoff", y="skill", orientation="h",
+                  title="Top Skills by Estimated Layoffs",
+                  color="estimate_layoff",
+                  color_continuous_scale=px.colors.sequential.Teal)
+    fig1.update_layout(xaxis_title="Layoffs", yaxis_title="", title_font=dict(size=16))
+    st.plotly_chart(fig1, use_container_width=True)
+
+with col2:
+    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    top_jobs['occupation'] = top_jobs['occupation'].str.title()
+    fig2 = px.bar(top_jobs, x="estimate_layoff", y="occupation", orientation="h",
+                  title="Top Occupations by Estimated Layoffs",
+                  color="estimate_layoff",
+                  color_continuous_scale=px.colors.sequential.Blues)
+    fig2.update_layout(xaxis_title="Layoffs", yaxis_title="", title_font=dict(size=16))
+    st.plotly_chart(fig2, use_container_width=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
