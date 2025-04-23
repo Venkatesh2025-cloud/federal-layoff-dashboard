@@ -11,7 +11,7 @@ st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wi
 @st.cache_data
 def load_data():
     df_ai = pd.read_csv("data/dashboard_ai_tagged_slim.csv.gz", compression="gzip")
-    df_dept_map = pd.read_csv("data/agency_department_map.csv")
+    df_agency = pd.read_csv("data/agency_department_map.csv", encoding="ISO-8859-1")
     df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
     df_signal = pd.read_csv("data/federal_layoff_signal.csv")
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
