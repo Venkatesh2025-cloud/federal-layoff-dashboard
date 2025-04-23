@@ -68,28 +68,29 @@ with st.sidebar:
 
 df_filtered = df[df['state'] == selected_state]
 
-# === Header with Clean Logo ===
+# === Header Polished ===
 st.markdown("""
 <style>
 .main-title {
     font-family: 'Inter', sans-serif;
     background-color: #003366;
-    padding: 0.9rem 1.2rem;
+    padding: 0.6rem 1rem;
     color: white;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
-    font-size: 1.6rem;
+    gap: 0.7rem;
+    font-size: 1.4rem;
     font-weight: 500;
-    margin-bottom: 1.6rem;
-    margin-top: 0.5rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.2rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .main-title img {
-    height: 28px;
+    height: 24px;
     vertical-align: middle;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 </style>
 <div class='main-title'>
@@ -172,7 +173,7 @@ st.markdown(f"""
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">
-            <img src="https://cdn-icons-png.flaticon.com/512/565/565547.png" style="width: 24px; height: 24px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/9011/9011327.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
             <h4>{df_filtered['skill'].nunique():,}</h4>
