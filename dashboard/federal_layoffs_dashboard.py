@@ -91,8 +91,9 @@ st.markdown("""
     height: 46px;
 }
 .radio-section {
-    margin-bottom: 1.5rem;
-    margin-top: 1rem;
+    margin-bottom: 2rem;
+    margin-top: 1.2rem;
+    padding-left: 10px;
 }
 </style>
 <div class='header-strip'>
