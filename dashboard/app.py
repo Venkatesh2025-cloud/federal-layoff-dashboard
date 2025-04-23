@@ -11,7 +11,7 @@ st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wi
 # === Load from Local Directory for Shared View ===
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
+    df_ai = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
     df_dept_map = pd.read_csv("data/agency_department_map.csv")
     df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
     df_signal = pd.read_csv("data/federal_layoff_signal.csv")
@@ -98,4 +98,3 @@ with t4:
 
 # === Footer ===
 st.markdown("---")
-st.caption("Built by Data Scientist & UX Strategist — Unified workforce insights from five datasets")
