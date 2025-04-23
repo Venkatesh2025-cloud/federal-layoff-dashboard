@@ -71,31 +71,28 @@ df_filtered = df[df['state'] == selected_state]
 # === Header Polished ===
 st.markdown("""
 <style>
-.main-title {
-    font-family: 'Inter', sans-serif;
-    background-color: #003366;
-    padding: 0.6rem 1rem;
-    color: white;
-    border-radius: 8px;
+.header-strip {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    gap: 0.7rem;
+    background-color: #003366;
+    padding: 0.7rem 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    margin-top: 0.3rem;
+    color: white;
+    font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     font-weight: 500;
-    margin-bottom: 1.2rem;
-    margin-top: 0.2rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
-.main-title img {
-    height: 24px;
-    vertical-align: middle;
-    margin-bottom: 2px;
+.header-strip .logo {
+    height: 26px;
 }
 </style>
-<div class='main-title'>
-    <img src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
+<div class='header-strip'>
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
+    <img class='logo' src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
 </div>
 """, unsafe_allow_html=True)
 
@@ -173,7 +170,7 @@ st.markdown(f"""
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">
-            <img src="https://cdn-icons-png.flaticon.com/512/9011/9011327.png" style="width: 24px; height: 24px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
             <h4>{df_filtered['skill'].nunique():,}</h4>
