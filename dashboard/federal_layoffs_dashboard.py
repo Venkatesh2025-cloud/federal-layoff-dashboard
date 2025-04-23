@@ -1,20 +1,24 @@
-
-# federal_layoffs_dashboard_visual_enhanced.py
-
-import pandas as pd
 import streamlit as st
+import pandas as pd
 import plotly.express as px
 import altair as alt
 import os
 
-
-# === Custom CSS Loader ===
+# Inject custom CSS
 def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
     try:
         with open(file_path) as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
         st.warning("⚠️ Custom style file not found.")
+
+# ✅ Set page configuration safely
+st.set_page_config(
+    page_title="🧠 Federal Layoffs & Skills Intelligence",
+    layout="wide"
+)
+
+inject_custom_css()
 
 
 # === Custom CSS Loader ===
