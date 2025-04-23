@@ -81,7 +81,7 @@ st.markdown("""
     margin-top: 0.3rem;
     color: white;
     font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     font-weight: 600;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
     border: 3px solid #00264d;
@@ -118,13 +118,13 @@ st.markdown("""
 }
 .kpi-text h4 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: #0f172a;
 }
 .kpi-text p {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     color: #475569;
 }
 </style>
