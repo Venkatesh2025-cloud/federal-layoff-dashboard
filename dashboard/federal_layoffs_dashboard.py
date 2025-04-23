@@ -93,7 +93,11 @@ st.markdown("""
 """.format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
 
 # === Tabs ===
-t1, t2, t3 = st.tabs(["🧠 Federal Layoff Intelligence", "📰 Layoff News", "🔁 Similar Occupations (Optional)"])
+t1, t2, t3 = st.tabs([
+    "<span style='color:#ec407a;'>🧠 Federal Layoff Intelligence</span>",
+    "<span style='color:#6d4c41;'>📰 Layoff News</span>",
+    "<span style='color:#fb8c00;'>🔁 Similar Occupations (Optional)</span>"
+])
 
 with t1:
     st.subheader(f"Top 10 Skills at Risk in {selected_state}")
@@ -101,7 +105,7 @@ with t1:
     fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
                         title="Top Skills by Estimated Layoffs",
                         color="estimate_layoff",
-                        color_continuous_scale=px.colors.sequential.Teal)
+                        color_continuous_scale=px.colors.sequential.Tealgrn)
     st.plotly_chart(fig_skills, use_container_width=True)
 
     st.subheader("Top 10 Occupations by Estimated Layoffs")
@@ -109,7 +113,7 @@ with t1:
     fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
                      title="Top Occupations by Estimated Layoffs",
                      color="estimate_layoff",
-                     color_continuous_scale=px.colors.sequential.Blues)
+                     color_continuous_scale=px.colors.sequential.Blues_r)
     st.plotly_chart(fig_jobs, use_container_width=True)
 
 with t2:
@@ -140,7 +144,7 @@ with t3:
         fig_sim = px.bar(similar_df, x='occupation', y='similarity',
                          title=f"Most Similar to {selected_occ}",
                          color='similarity',
-                         color_continuous_scale=px.colors.sequential.Greens)
+                         color_continuous_scale=px.colors.sequential.Oranges)
         st.plotly_chart(fig_sim, use_container_width=True)
     else:
         st.info("Similarity data not available for this occupation.")
