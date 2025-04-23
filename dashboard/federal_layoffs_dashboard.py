@@ -1,24 +1,22 @@
 
 # federal_layoffs_dashboard_visual_enhanced.py
+
 import pandas as pd
 import streamlit as st
 import plotly.express as px
 import altair as alt
 import os
 
-# === Custom CSS Loader ===
-def inject_custom_css(file_path="dashboard/streamlit_dashboard_custom_style.css"):
-    try:
-        with open(file_path) as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.warning("⚠️ Custom style file not found.")
-
 st.set_page_config(
-    page_title="🧠 Federal Layoffs & Skills Intelligence",
     layout="wide"
 )
 inject_custom_css()
+
+
+with open("streamlit_dashboard_custom_style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+page_title="🧠 Federal Layoffs & Skills Intelligence", layout="wide")
 
 # === Load CSV with Safe Encoding ===
 def safe_read_csv(path):
@@ -70,8 +68,9 @@ df_filtered = df[df['state'] == selected_state]
 # === Optional Logo Placement ===
 st.markdown("""
     <div style='display: flex; align-items: center; margin-bottom: 1rem;'>
-        <img src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112231/draup-logo.svg.svg'
+        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Draup_logo.png/320px-Draup_logo.png'
              style='height: 60px; margin-right: 1rem;' />
+        <div style='font-size: 1.4rem; font-weight: 600; font-family: "Segoe UI", sans-serif;'>Draup Intelligence Platform</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -95,10 +94,82 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === KPIs using st.columns ===
+
+# === KPI Section with SaaS-style cards ===
+st.markdown("""
+<style>
+.metric-card {
+    border-radius: 12px;
+    padding: 1.2rem;
+    background-color: #ffffff;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+}
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+.metric-icon {
+    height: 44px;
+    width: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: white;
+}
+.metric-data h4 {
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 600;
+    color: #1f2937;
+}
+.metric-data p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+</style>
+""", unsafe_allow_html=True)
+
 col1, col2, col3 = st.columns(3)
-col1.metric("👥 Total Workforce", f"{df_filtered['talent_size'].sum():,}")
-col2.metric("⚠️ Estimated Layoffs", f"{df_filtered['estimate_layoff'].sum():,}")
-col3.metric("🎯 Unique Skills", f"{df_filtered['skill'].nunique():,}")
+
+with col1:
+    st.markdown(f"""
+    <div class='metric-card'>
+        <div class='metric-icon' style='background-color: #34d399;'>👥</div>
+        <div class='metric-data'>
+            <h4>{df_filtered['talent_size'].sum():,}</h4>
+            <p>Total Workforce</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown(f"""
+    <div class='metric-card'>
+        <div class='metric-icon' style='background-color: #fbbf24;'>⚠️</div>
+        <div class='metric-data'>
+            <h4>{df_filtered['estimate_layoff'].sum():,}</h4>
+            <p>Estimated Layoffs</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+    <div class='metric-card'>
+        <div class='metric-icon' style='background-color: #60a5fa;'>🎯</div>
+        <div class='metric-data'>
+            <h4>{df_filtered['skill'].nunique():,}</h4>
+            <p>Unique Skills</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+:,}")
 
 # === Tabs Layout ===
 tab1, tab2, tab3 = st.tabs(["📊 Top Skills & Jobs", "📰 Layoff News", "🔍 Similar Occupations"])
