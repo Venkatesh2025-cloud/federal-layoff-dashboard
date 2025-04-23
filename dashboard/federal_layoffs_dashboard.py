@@ -93,8 +93,8 @@ st.markdown("""
 .kpi-container {
     display: flex;
     justify-content: space-between;
-    gap: 1.2rem;
-    margin-top: 1.2rem; /* Increased to push the KPI cards further down */
+    gap: 1.3rem;
+    margin-top: 1.3rem; /* Increased to push the KPI cards further down */
     margin-bottom: 1.0rem;
 }
 .kpi-card {
