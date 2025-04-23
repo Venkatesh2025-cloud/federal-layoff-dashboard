@@ -1,5 +1,5 @@
 
-# federal_layoffs_dashboard_v2.py
+# federal_layoffs_dashboard_enhanced.py
 
 import pandas as pd
 import streamlit as st
@@ -16,7 +16,6 @@ def safe_read_csv(path):
     except UnicodeDecodeError:
         return pd.read_csv(path, encoding="latin1")
 
-# === Load Datasets ===
 @st.cache_data
 def load_data():
     df = safe_read_csv("data/dashboard_ai_tagged_cleaned.csv")
@@ -25,7 +24,6 @@ def load_data():
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df, df_summary, df_signal, df_sim
 
-# Validate all required files exist
 required_files = [
     "data/dashboard_ai_tagged_cleaned.csv",
     "data/dashboard_agency_state_summary.csv",
@@ -38,7 +36,6 @@ if missing:
     st.error(f"Missing required file(s): {', '.join(missing)}")
     st.stop()
 
-# Load data
 with st.spinner("Loading datasets..."):
     try:
         df, df_summary, df_signal, df_sim = load_data()
@@ -46,28 +43,22 @@ with st.spinner("Loading datasets..."):
         st.error(f"Failed to load datasets: {e}")
         st.stop()
 
-# Clean column names
+# Clean and prepare data
 for d in [df, df_summary, df_signal]:
     d.columns = d.columns.str.lower().str.strip().str.replace(" ", "_")
 
 df_sim.columns = df_sim.columns.str.lower().str.strip()
 df_sim.index = df_sim.index.str.lower().str.strip()
 
-# Normalize state names
 df['state'] = df['state'].str.strip().str.title()
 df_signal['state'] = df_signal['state'].str.strip().str.title()
-
-# Convert date column and clean estimated_layoff
 df_signal['date'] = pd.to_datetime(df_signal['date'], errors='coerce')
 df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].replace("Unspecified number", pd.NA), errors='coerce')
 
-# === Sidebar Filters ===
+# === Sidebar ===
 st.sidebar.header("📍 Filter by State")
 state_list = sorted(df['state'].unique())
 selected_state = st.sidebar.selectbox("State", state_list)
-st.toast(f"Dashboard updated for {selected_state}")
-
-# === Apply Filter ===
 df_filtered = df[df['state'] == selected_state]
 
 # === Header ===
@@ -80,49 +71,55 @@ st.markdown(header_html, unsafe_allow_html=True)
 # === KPI Section ===
 total_workforce = df_filtered['talent_size'].sum()
 total_layoffs = df_filtered['estimate_layoff'].sum()
+layoff_rate = (total_layoffs / total_workforce) * 100 if total_workforce else 0
 unique_skills = df_filtered['skill'].nunique()
 
 kpi_html = f'''
 <div style="display: flex; justify-content: space-around; font-family: 'Inter', sans-serif;">
-    <div style="background: #f0fdf4; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #34a853;">{total_workforce:,}</div>
+    <div style="background: #dcfce7; border-radius: 12px; padding: 1rem; text-align: center; width: 23%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #15803d;">{total_workforce:,}</div>
         <div style="color: #444; font-size: 0.95rem;">Total Workforce</div>
     </div>
-    <div style="background: #fff7ed; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #f9a825;">{total_layoffs:,}</div>
+    <div style="background: #ffedd5; border-radius: 12px; padding: 1rem; text-align: center; width: 23%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #c2410c;">{total_layoffs:,}</div>
         <div style="color: #444; font-size: 0.95rem;">Estimated Layoffs</div>
     </div>
-    <div style="background: #e3f2fd; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #1e88e5;">{unique_skills:,}</div>
+    <div style="background: #e0f2fe; border-radius: 12px; padding: 1rem; text-align: center; width: 23%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #0284c7;">{layoff_rate:.1f}%</div>
+        <div style="color: #444; font-size: 0.95rem;">Layoff Rate</div>
+    </div>
+    <div style="background: #ede9fe; border-radius: 12px; padding: 1rem; text-align: center; width: 23%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #7c3aed;">{unique_skills:,}</div>
         <div style="color: #444; font-size: 0.95rem;">Unique Skills</div>
     </div>
 </div>
 '''
 st.markdown(kpi_html, unsafe_allow_html=True)
 
-# === Tabs ===
-t1, t2, t3 = st.tabs([
-    "📊 Layoff Summary",
-    "📰 Layoff News",
-    "🧭 Similar Occupations"
-])
+# === Main Tabs ===
+t1, t2, t3 = st.tabs(["📊 Layoff Summary", "📰 Layoff News", "🧭 Similar Occupations"])
 
 with t1:
     st.subheader("Most At-Risk Occupations")
-    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
-    if not top_jobs.empty:
-        fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff", color="estimate_layoff", color_continuous_scale=px.colors.sequential.Blues_r)
-        st.plotly_chart(fig_jobs, use_container_width=True)
-    else:
-        st.info("No occupation data found for selected state.")
+    top_jobs = df_filtered.groupby("occupation")[["estimate_layoff", "talent_size"]].sum().reset_index()
+    top_jobs["layoff_rate"] = (top_jobs["estimate_layoff"] / top_jobs["talent_size"]) * 100
+    top_jobs = top_jobs.sort_values("estimate_layoff", ascending=False).head(5)
 
-    st.subheader("Critical Skills Impacted by Layoffs")
-    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
-    if not top_skills.empty:
-        fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", color="estimate_layoff", color_continuous_scale=px.colors.sequential.Tealgrn)
-        st.plotly_chart(fig_skills, use_container_width=True)
-    else:
-        st.info("No skill data found for selected state.")
+    fig_jobs = px.bar(top_jobs, x="occupation", y="layoff_rate", color="layoff_rate",
+                      title="Top Occupations by Layoff Rate",
+                      labels={"layoff_rate": "% Layoff Rate"},
+                      color_continuous_scale=px.colors.sequential.Blues)
+    st.plotly_chart(fig_jobs, use_container_width=True)
+
+    st.subheader("Critical Skills in Selected Occupation")
+    selected_occ = st.selectbox("Select an Occupation", top_jobs["occupation"].tolist())
+    filtered_skills = df_filtered[df_filtered["occupation"] == selected_occ]
+    top_skills = filtered_skills.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
+
+    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", color="estimate_layoff",
+                        title=f"Top Skills Impacted in {selected_occ}",
+                        color_continuous_scale=px.colors.sequential.Teal)
+    st.plotly_chart(fig_skills, use_container_width=True)
 
 with t2:
     st.subheader(f"Layoff News in {selected_state}")
@@ -148,13 +145,14 @@ with t2:
 
 with t3:
     st.subheader("Explore Similar Occupations (Optional)")
-    selected_occ = st.selectbox("Choose an occupation", sorted(df['occupation'].unique()))
-    selected_key = selected_occ.lower().strip()
+    occupation_list = sorted(df['occupation'].unique())
+    selected_occ_sim = st.selectbox("Choose an occupation", occupation_list)
+    selected_key = selected_occ_sim.lower().strip()
     if selected_key in df_sim.index:
         similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
         similar_df.columns = ['occupation', 'similarity']
         fig_sim = px.bar(similar_df, x='occupation', y='similarity',
-                         title=f"Most Similar to {selected_occ}",
+                         title=f"Most Similar to {selected_occ_sim}",
                          color='similarity',
                          color_continuous_scale=px.colors.sequential.Oranges)
         st.plotly_chart(fig_sim, use_container_width=True)
