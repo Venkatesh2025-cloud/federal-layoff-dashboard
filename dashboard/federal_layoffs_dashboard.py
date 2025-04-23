@@ -284,17 +284,31 @@ with tab2:
     
 # === Tab 3: Alternative Career Paths ===
 with tab3:
-    st.markdown("""
+    st.markdown(f"""
     <style>
-    .career-header {
+    .career-header {{
         font-size: 1.3rem;
         font-weight: 600;
         font-family: 'Inter', sans-serif;
         color: #0f172a;
         margin-bottom: 1rem;
-    }
+    }}
+    .career-section-title {{
+        font-size: 1.1rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }}
+    .kpi-card:hover {{
+        transform: scale(1.01);
+        background-color: #f1f5f9;
+        cursor: pointer;
+    }}
     </style>
     <div class='career-header'>Explore Similar Occupations</div>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 1rem 0;">
     """, unsafe_allow_html=True)
 
     selected_occ = st.selectbox("Select an occupation to find alternatives", sorted(df_filtered['occupation'].unique()), key="similar_occ")
@@ -308,14 +322,18 @@ with tab3:
         fig_sim = px.bar(similar_df, x='Similarity Score', y='Occupation',
                          orientation='h',
                          color='Similarity Score',
-                         color_continuous_scale=px.colors.sequential.Teal,
+                         color_continuous_scale=px.colors.sequential.Purples,
                          title=f"Top Alternative Careers for: {selected_occ}")
         fig_sim.update_layout(
             title_font=dict(size=16),
+            font=dict(family='Inter', size=13, color='#0f172a'),
             xaxis_title="Similarity Score",
             yaxis_title="Occupation",
             margin=dict(t=40, b=20)
         )
         st.plotly_chart(fig_sim, use_container_width=True)
+
+        # === Export Button for Similar Careers ===
+        st.download_button("Download Similar Careers CSV", similar_df.to_csv(index=False), f"similar_occupations_{selected_key}.csv")
     else:
         st.warning("Similarity data not available for this occupation.")
