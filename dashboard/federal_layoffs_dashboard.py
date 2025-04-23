@@ -222,9 +222,26 @@ with tab1:
 
 # === Tab 2: Layoff Signals ===
 with tab2:
-    st.subheader(f"Layoff News and Events in {selected_state}")
+    st.markdown("""
+    <style>
+    .layoff-header {
+        font-size: 1.3rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        margin-bottom: 1rem;
+    }
+    .layoff-articles-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        margin-top: 2rem;
+    }
+    </style>
+    <div class='layoff-header'>Layoff News & Timeline in {}</div>
+    """.format(selected_state), unsafe_allow_html=True)
 
-    # Use flexible filtering for state matching
     df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, case=False, na=False)]
 
     if df_signal_filtered.empty:
@@ -243,7 +260,10 @@ with tab2:
         ).properties(title="Layoff Events Timeline")
         st.altair_chart(chart, use_container_width=True)
 
-        st.markdown("### Layoff News Articles")
+        st.markdown("""
+        <div class='layoff-articles-title'>Layoff News Articles</div>
+        """, unsafe_allow_html=True)
+
         for _, row in df_signal_filtered.iterrows():
             article_date = row['date'].strftime('%b %d, %Y') if pd.notna(row['date']) else "Unknown Date"
             layoffs = f"{int(row['estimated_layoff']):,}" if pd.notna(row['estimated_layoff']) else "Unspecified"
@@ -251,4 +271,3 @@ with tab2:
                 st.markdown(f"**Title:** {row['article_title']}")
                 st.markdown(f"**Estimated Layoffs:** {layoffs}")
                 st.markdown(f"[Read Article]({row['source_link']})")
-
