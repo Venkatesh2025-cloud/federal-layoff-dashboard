@@ -7,6 +7,7 @@ import plotly.express as px
 import altair as alt
 import os
 
+
 st.set_page_config(
     page_title='Federal Layoffs & Skills Intelligence',
     layout='wide',
@@ -14,8 +15,9 @@ st.set_page_config(
 )
 
 
+
 # === Custom CSS Loader ===
-def inject_custom_css(file_path="dashboard/streamlit_dashboard_custom_style.css"):
+def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
     try:
         with open(file_path) as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
