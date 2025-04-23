@@ -107,7 +107,9 @@ with tab1:
     <h4 style="margin-bottom: 0.5rem;">🔥 Top 10 Skills at Risk</h4>
     """, unsafe_allow_html=True)
 
-    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False)
+    skill_count = st.slider("Select number of top skills", min_value=5, max_value=10, value=5)
+    top_skills = top_skills.head(skill_count)
     top_skills['skill'] = top_skills['skill'].str.title()
     fig_skills = px.bar(top_skills, x="estimate_layoff", y="skill", orientation='h',
                         title=f"Top Skills by Estimated Layoffs in {selected_state}",
@@ -115,6 +117,20 @@ with tab1:
                         color_continuous_scale=px.colors.sequential.Teal)
     fig_skills.update_layout(xaxis_title="Layoffs", yaxis_title="Skill", title_font=dict(size=16))
     st.plotly_chart(fig_skills, use_container_width=True)
+
+    st.markdown("""
+    <h4 style="margin-top: 1.5rem;">💼 Top Occupations at Risk</h4>
+    """, unsafe_allow_html=True)
+    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False)
+    occ_count = st.slider("Select number of top occupations", min_value=5, max_value=10, value=5)
+    top_jobs = top_jobs.head(occ_count)
+    top_jobs['occupation'] = top_jobs['occupation'].str.title()
+    fig_jobs = px.bar(top_jobs, x="estimate_layoff", y="occupation", orientation='h',
+                      title=f"Top Occupations by Estimated Layoffs in {selected_state}",
+                      color="estimate_layoff",
+                      color_continuous_scale=px.colors.sequential.Blues)
+    fig_jobs.update_layout(xaxis_title="Layoffs", yaxis_title="Occupation", title_font=dict(size=16))
+    st.plotly_chart(fig_jobs, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
