@@ -8,17 +8,22 @@ import os
 
 st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wide")
 
-# === Load Datasets ===
+# === Load from Local Directory for Shared View ===
 @st.cache_data
 def load_data():
-    df_ai = pd.read_csv("data/dashboard_ai_tagged.csv")
+    df = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression='gzip')
     df_dept_map = pd.read_csv("data/agency_department_map.csv")
     df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
     df_signal = pd.read_csv("data/federal_layoff_signal.csv")
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df_ai, df_dept_map, df_summary, df_signal, df_sim
 
-df_ai, df_dept_map, df_summary, df_signal, df_sim = load_data()
+# Load datasets
+try:
+    df_ai, df_dept_map, df_summary, df_signal, df_sim = load_data()
+except FileNotFoundError:
+    st.error("One or more required files are missing in the 'data/' folder. Please ensure all five datasets are available.")
+    st.stop()
 
 # === Clean Column Names ===
 for df in [df_ai, df_dept_map, df_summary, df_signal]:
