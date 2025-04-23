@@ -63,9 +63,8 @@ df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].repl
 
 # === Sidebar ===
 with st.sidebar:
-    st.markdown("### Filter Options")
+    st.markdown("<div class='sidebar-title'>Filter Options</div>", unsafe_allow_html=True)
     selected_state = st.selectbox("Select a State", sorted(df['state'].unique()))
-
 df_filtered = df[df['state'] == selected_state]
 
 # === Header Polished ===
@@ -82,7 +81,7 @@ st.markdown("""
     margin-top: 0.3rem;
     color: white;
     font-family: 'Inter', sans-serif;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: 600;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
     border: 3px solid #00264d;
