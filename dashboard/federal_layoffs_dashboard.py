@@ -153,21 +153,27 @@ st.markdown("""
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card">
-        <div class="kpi-icon" style="background-color: #d1fae5; color: #059669;">👥</div>
+        <div class="kpi-icon" style="background-color: #d1fae5; color: #059669;">
+            <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" style="width: 24px; height: 24px;">
+        </div>
         <div class="kpi-text">
             <h4>{df_filtered['talent_size'].sum():,}</h4>
             <p>Total Workforce</p>
         </div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-icon" style="background-color: #fef3c7; color: #b45309;">⚠️</div>
+        <div class="kpi-icon" style="background-color: #fef3c7; color: #b45309;">
+            <img src="https://cdn-icons-png.flaticon.com/512/595/595067.png" style="width: 24px; height: 24px;">
+        </div>
         <div class="kpi-text">
             <h4>{df_filtered['estimate_layoff'].sum():,}</h4>
             <p>Estimated Layoffs</p>
         </div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">🎯</div>
+        <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3794/3794422.png" style="width: 24px; height: 24px;">
+        </div>
         <div class="kpi-text">
             <h4>{df_filtered['skill'].nunique():,}</h4>
             <p>Unique Skills</p>
