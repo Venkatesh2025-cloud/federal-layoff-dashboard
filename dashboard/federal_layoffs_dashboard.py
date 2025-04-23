@@ -1,5 +1,5 @@
 
-# federal_layoffs_dashboard_improved.py
+# federal_layoffs_dashboard_final_safe.py
 
 import pandas as pd
 import streamlit as st
@@ -9,12 +9,18 @@ import os
 
 st.set_page_config(page_title="Federal Layoffs & Skills Dashboard", layout="wide")
 
-# === Load Datasets ===
+# === Safe CSV Loader with Encoding Fallback ===
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/dashboard_ai_tagged_cleaned.csv")
-    df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
-    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
+    def safe_read_csv(path):
+        try:
+            return pd.read_csv(path, encoding="utf-8")
+        except UnicodeDecodeError:
+            return pd.read_csv(path, encoding="latin1")
+
+    df = safe_read_csv("data/dashboard_ai_tagged_cleaned.csv")
+    df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
+    df_signal = safe_read_csv("data/federal_layoff_signal.csv")
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df, df_summary, df_signal, df_sim
 
@@ -32,33 +38,32 @@ if missing:
 
 df, df_summary, df_signal, df_sim = load_data()
 
-# === Clean Columns ===
+# Normalize columns
 for d in [df, df_summary, df_signal]:
     d.columns = d.columns.str.lower().str.strip().str.replace(" ", "_")
 
 df_sim.columns = df_sim.columns.str.lower().str.strip()
 df_sim.index = df_sim.index.str.lower().str.strip()
 
-df['state'] = df['state'].str.strip().str.title()
-df_signal['state'] = df_signal['state'].str.strip().str.title()
+df['state'] = df['state'].str.title().str.strip()
+df_signal['state'] = df_signal['state'].str.title().str.strip()
 df_signal['date'] = pd.to_datetime(df_signal['date'], errors='coerce')
 df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].replace("Unspecified number", pd.NA), errors='coerce')
 
-# === Sidebar ===
+# Sidebar
 st.sidebar.header("📍 Filter by State")
 state_list = sorted(df['state'].unique())
 selected_state = st.sidebar.selectbox("State", state_list)
-
 df_filtered = df[df['state'] == selected_state]
 
-# === Header ===
+# Header
 st.markdown("""
 <h1 style='text-align: center; background-color: #003366; color: white; padding: 1rem; border-radius: 8px;'>
 Federal Layoffs & Skills Intelligence Dashboard
 </h1>
 """, unsafe_allow_html=True)
 
-# === KPI Section ===
+# KPI Metrics
 total_workforce = df_filtered['talent_size'].sum()
 total_layoffs = df_filtered['estimate_layoff'].sum()
 unique_skills = df_filtered['skill'].nunique()
@@ -70,7 +75,7 @@ col2.metric("⚠️ Estimated Layoffs", f"{total_layoffs:,}")
 col3.metric("📌 Unique Skills", f"{unique_skills:,}")
 col4.metric("📉 Layoff Rate", f"{layoff_rate:.1f}%")
 
-# === Tabs ===
+# Tabs
 tab1, tab2, tab3 = st.tabs([
     "📊 Top Jobs & Skills",
     "📰 News & Timeline",
@@ -132,6 +137,6 @@ with tab3:
     else:
         st.info("Similarity data not available for this occupation.")
 
-# === Footer ===
+# Footer
 st.markdown("---")
 st.caption("Built with ❤️ by your data + design team. Data source: Draup")
