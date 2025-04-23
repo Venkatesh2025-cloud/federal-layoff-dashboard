@@ -55,6 +55,10 @@ df_sim.index = df_sim.index.str.lower().str.strip()
 df['state'] = df['state'].str.strip().str.title()
 df_signal['state'] = df_signal['state'].str.strip().str.title()
 
+# Convert date column and clean estimated_layoff
+df_signal['date'] = pd.to_datetime(df_signal['date'], errors='coerce')
+df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'], errors='coerce')
+
 # === Sidebar Filters ===
 st.sidebar.header("📍 Filter by State")
 state_list = sorted(df['state'].unique())
@@ -98,13 +102,12 @@ with t1:
 
 with t2:
     st.subheader(f"Layoff News in {selected_state}")
-    df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+    df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, na=False)]
 
     if df_signal_filtered.empty:
         st.info("No layoff news found for the selected state.")
     else:
-        df_signal_filtered['date'] = pd.to_datetime(df_signal_filtered['date'], errors='coerce')
-        chart = alt.Chart(df_signal_filtered).mark_bar().encode(
+        chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
             x=alt.X('date:T', title='Date'),
             y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
             color=alt.Color('agency_name:N', title='Agency'),
