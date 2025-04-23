@@ -337,3 +337,30 @@ with tab3:
         st.download_button("Download Similar Careers CSV", similar_df.to_csv(index=False), f"similar_occupations_{selected_key}.csv")
     else:
         st.warning("Similarity data not available for this occupation.")
+
+
+import plotly.express as px
+
+# Ensure 'df_signal' is available and contains 'state' and 'estimated_layoff'
+df_state_summary = df_signal.groupby('state', as_index=False)['estimated_layoff'].sum()
+df_state_summary = df_state_summary.dropna(subset=['state', 'estimated_layoff'])
+
+fig_map = px.scatter_geo(df_state_summary,
+                         locations="state",
+                         locationmode="USA-states",
+                         scope="usa",
+                         size="estimated_layoff",
+                         color="estimated_layoff",
+                         hover_name="state",
+                         title="Layoffs by State (Bubble Size = Estimated Layoffs)",
+                         color_continuous_scale="Reds",
+                         size_max=40)
+
+fig_map.update_layout(
+    geo=dict(bgcolor='rgba(0,0,0,0)'),
+    title_font=dict(family='Inter', size=16, color='#0f172a'),
+    margin=dict(t=40, b=20)
+)
+
+st.plotly_chart(fig_map, use_container_width=True)
+
