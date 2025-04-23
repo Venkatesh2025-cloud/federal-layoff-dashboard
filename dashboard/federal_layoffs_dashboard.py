@@ -73,29 +73,29 @@ st.markdown("""
 <style>
 .header-strip {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     background-color: #003366;
     padding: 0.7rem 1.5rem;
     border-radius: 8px;
-    margin: 1rem auto 1.5rem auto;
+    margin-bottom: 1.5rem;
+    margin-top: 0.3rem;
     color: white;
     font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    width: fit-content;
 }
 .header-strip .logo {
     height: 36px;
-    margin-right: 10px;
 }
 </style>
 <div class='header-strip'>
-    <img class='logo' src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
+    <img class='logo' src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
 </div>
 """, unsafe_allow_html=True)
+
 
 # === KPI Cards Refined ===
 st.markdown("""
