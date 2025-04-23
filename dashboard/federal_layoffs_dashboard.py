@@ -10,9 +10,9 @@ st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard",
 # === Load Datasets ===
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/dashboard_ai_tagged_cleaned.csv")
+    df = pd.read_csv("data/dashboard_ai_tagged_cleaned.csv", encoding="latin1")
     df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
-    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
+    df_signal = pd.read_csv("data/federal_layoff_signal.csv", encoding="latin1")
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df, df_summary, df_signal, df_sim
 
@@ -36,7 +36,7 @@ except Exception as e:
     st.error(f"Failed to load datasets: {e}")
     st.stop()
 
-# === Clean Column Names ===
+# Clean column names
 for d in [df, df_summary, df_signal]:
     d.columns = d.columns.str.lower().str.strip().str.replace(" ", "_")
 
@@ -65,9 +65,9 @@ k2.metric("⚠️ Estimated Layoffs", f"{df_filtered['estimate_layoff'].sum():,}
 k3.metric("🔧 Unique Skills", f"{df_filtered['skill'].nunique():,}")
 
 # === Tabs ===
-tab1, tab2, tab3 = st.tabs(["🧠 Layoff Intelligence", "📰 News", "🔁 Similar Occupations"])
+t1, t2, t3 = st.tabs(["🧠 Federal Layoff Intelligence", "📰 Layoff News", "🔁 Similar Occupations"])
 
-with tab1:
+with t1:
     st.subheader(f"Top 5 Occupations at Risk in {selected_state}")
     top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
     fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff", title="Top Occupations by Estimated Layoffs")
@@ -79,12 +79,12 @@ with tab1:
     fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", title="Top Skills by Estimated Layoffs")
     st.plotly_chart(fig_skills, use_container_width=True)
 
-with tab2:
+with t2:
     st.subheader(f"Layoff News in {selected_state}")
     df_signal_filtered = df_signal[df_signal['state'] == selected_state]
     st.dataframe(df_signal_filtered[["date", "agency_name", "estimated_layoff", "article_title", "source_link"]], use_container_width=True)
 
-with tab3:
+with t3:
     st.subheader("Explore Similar Occupations")
     selected_occ = st.selectbox("Choose an occupation", sorted(df['occupation'].unique()))
     selected_key = selected_occ.lower().strip()
@@ -98,4 +98,4 @@ with tab3:
 
 # === Footer ===
 st.markdown("---")
-st.caption("Built with ❤️ by your data + design team. Source: Cleaned federal workforce datasets")
+st.caption("Built with ❤️ by your data + design team. Data source: Federal workforce insights")
