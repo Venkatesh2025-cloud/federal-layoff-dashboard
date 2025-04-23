@@ -84,4 +84,31 @@ with st.sidebar:
 
 df_filtered = df[df['state'] == selected_state]
 
+# === Header with Logo ===
+st.markdown("""
+<style>
+    .main-title {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #003366;
+        padding: 1rem 1.2rem;
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-size: 1.8rem;
+        margin-bottom: 1.8rem;
+    }
+    .main-title img {
+        height: 32px;
+        vertical-align: middle;
+    }
+</style>
+<div class='main-title'>
+    <img src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
+    Federal Layoffs & Skills Intelligence Dashboard
+</div>
+""", unsafe_allow_html=True)
+
 # === Remaining dashboard content... ===
