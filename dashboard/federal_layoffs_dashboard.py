@@ -1,4 +1,3 @@
-
 # federal_layoffs_dashboard_visual_enhanced.py
 
 import pandas as pd
@@ -7,14 +6,11 @@ import plotly.express as px
 import altair as alt
 import os
 
-
 st.set_page_config(
     page_title='Federal Layoffs & Skills Intelligence',
     layout='wide',
-    page_icon='dashboard/draup-logo.svg (1) (1).png'
+    page_icon='dashboard/white-logo (1).png'  # ✅ use converted PNG logo
 )
-
-
 
 # === Custom CSS Loader ===
 def inject_custom_css(file_path="dashboard/streamlit_dashboard_custom_style.css"):
@@ -25,7 +21,6 @@ def inject_custom_css(file_path="dashboard/streamlit_dashboard_custom_style.css"
         st.warning("⚠️ Custom style file not found.")
 
 inject_custom_css()
-
 
 # === Load CSV with Safe Encoding ===
 def safe_read_csv(path):
@@ -73,22 +68,13 @@ with st.sidebar:
 
 df_filtered = df[df['state'] == selected_state]
 
-# === Header ===
+# === Header with Logo ===
 st.markdown("""
-<style>
-    .main-title {
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #003366;
-        padding: 1rem;
-        color: white;
-        border-radius: 8px;
-        text-align: center;
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
-    }
-</style>
-<div class='main-title'>
-    🧠 Federal Layoffs & Skills Intelligence Dashboard
+<div style='display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;'>
+    <img src='dashboard/white-logo (1).png' style='height: 40px;'>
+    <h1 style='font-size: 1.7rem; font-weight: 600; font-family: "Inter", sans-serif; margin: 0;'>
+        Federal Layoffs & Skills Intelligence Dashboard
+    </h1>
 </div>
 """, unsafe_allow_html=True)
 
