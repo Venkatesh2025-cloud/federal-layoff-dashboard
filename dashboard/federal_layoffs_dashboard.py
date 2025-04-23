@@ -337,39 +337,3 @@ with tab3:
         st.download_button("Download Similar Careers CSV", similar_df.to_csv(index=False), f"similar_occupations_{selected_key}.csv")
     else:
         st.warning("Similarity data not available for this occupation.")
-
-
-# === U.S. Layoff Map View ===
-st.markdown("""
-<div style='margin-top: 2rem; font-size: 1.1rem; font-weight: 600; font-family: "Inter", sans-serif; color: #334155;'>
-🌐 Geographic View of Layoffs by State
-</div>
-""", unsafe_allow_html=True)
-
-# Aggregate estimated layoffs by state
-map_data = df_signal.dropna(subset=['state', 'estimated_layoff'])
-map_data_grouped = map_data.groupby('state', as_index=False)['estimated_layoff'].sum()
-
-# Ensure 'state' is full 2-letter abbreviation or full name
-# For best results, use state abbreviations (e.g., AL, CA, TX)
-fig_map = px.scatter_geo(map_data_grouped,
-                         locations="state",
-                         locationmode="USA-states",
-                         scope="usa",
-                         size="estimated_layoff",
-                         color="estimated_layoff",
-                         hover_name="state",
-                         size_max=40,
-                         color_continuous_scale="Reds",
-                         title="Estimated Layoffs by State")
-
-fig_map.update_layout(
-    geo=dict(bgcolor='rgba(0,0,0,0)'),
-    font=dict(family="Inter", size=13, color="#0f172a"),
-    title_font=dict(size=16),
-    margin=dict(t=40, b=20)
-)
-
-st.plotly_chart(fig_map, use_container_width=True)
-
-
