@@ -90,45 +90,76 @@ st.markdown("""
 .header-strip .logo {
     height: 46px;
 }
+.kpi-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.0rem;
+    margin-top: 1.2rem;
+    margin-bottom: 1.0rem;
+}
+.kpi-card {
+    flex: 1;
+    background: #f8fafc;
+    border-left: 6px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+.kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e2e8f0;
+}
+.kpi-text h4 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.kpi-text p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #475569;
+}
 </style>
 <div class='header-strip'>
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
     <img class='logo' src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
 </div>
-""", unsafe_allow_html=True)
-
-# === Tabs Section ===
-tab1, tab2, tab3 = st.tabs(["Layoff Intelligence", "Layoff Signals", "Alternative Career Paths"])
-
-# === Tab 1: Layoff Intelligence ===
-with tab1:
-    st.markdown("""
-    <div class='alt-container'>
-    <h4 style="margin-bottom: 0.5rem;">Top Skills at Risk</h4>
-    """, unsafe_allow_html=True)
-
-    skill_top_n = st.radio("Select number of top skills", options=[5, 10], horizontal=True)
-    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(skill_top_n)
-    top_skills['skill'] = top_skills['skill'].str.title()
-    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", 
-                        title=f"Top {skill_top_n} Skills by Estimated Layoffs in {selected_state}",
-                        color="estimate_layoff",
-                        color_continuous_scale=px.colors.sequential.Teal)
-    fig_skills.update_layout(xaxis_title="Skill", yaxis_title="Layoffs", title_font=dict(size=16))
-    st.plotly_chart(fig_skills, use_container_width=True)
-
-    st.markdown("""
-    <h4 style="margin-top: 1.5rem;">Top Occupations at Risk</h4>
-    """, unsafe_allow_html=True)
-
-    job_top_n = st.radio("Select number of top occupations", options=[5, 10], horizontal=True)
-    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(job_top_n)
-    top_jobs['occupation'] = top_jobs['occupation'].str.title()
-    fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
-                     title=f"Top {job_top_n} Occupations by Estimated Layoffs in {selected_state}",
-                     color="estimate_layoff",
-                     color_continuous_scale=px.colors.sequential.Blues)
-    fig_jobs.update_layout(xaxis_title="Occupation", yaxis_title="Layoffs", title_font=dict(size=16))
-    st.plotly_chart(fig_jobs, use_container_width=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+<div class="kpi-container">
+    <div class="kpi-card">
+        <div class="kpi-icon">
+            <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" style="width: 22px;">
+        </div>
+        <div class="kpi-text">
+            <h4>{:,}</h4>
+            <p>Total Workforce</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">
+            <img src="https://cdn-icons-png.flaticon.com/512/595/595067.png" style="width: 22px;">
+        </div>
+        <div class="kpi-text">
+            <h4>{:,}</h4>
+            <p>Estimated Layoffs</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">
+            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" style="width: 22px;">
+        </div>
+        <div class="kpi-text">
+            <h4>{:,}</h4>
+            <p>Unique Skills</p>
+        </div>
+    </div>
+</div>
+""".format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
