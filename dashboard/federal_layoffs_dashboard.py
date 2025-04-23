@@ -207,12 +207,12 @@ with tab1:
     st.plotly_chart(fig_jobs, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
-# === Tab 2: Layoff Signals ===
+    # === Tab 2: Layoff Signals ===
 with tab2:
-    st.subheader(f"Layoff News & Timeline in {selected_state}")
-    
-    # Fix: Ensure case-insensitive and trimmed comparison
-    df_signal_filtered = df_signal[df_signal['state'].str.lower().str.strip() == selected_state.lower().strip()]
+    st.subheader(f"Layoff News and Events in {selected_state}")
+
+    # Use flexible filtering for state matching
+    df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, case=False, na=False)]
 
     if df_signal_filtered.empty:
         st.info("No layoff news found for the selected state.")
@@ -221,21 +221,23 @@ with tab2:
             x=alt.X('date:T', title='Date'),
             y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
             color=alt.Color('agency_name:N', title='Agency'),
-            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
+            tooltip=[
+                alt.Tooltip('date:T', title="Date"),
+                alt.Tooltip('agency_name:N', title="Agency"),
+                alt.Tooltip('estimated_layoff:Q', title="Layoffs"),
+                alt.Tooltip('article_title:N', title="Article")
+            ]
         ).properties(title="Layoff Events Timeline")
         st.altair_chart(chart, use_container_width=True)
 
         st.markdown("### Layoff News Articles")
         for _, row in df_signal_filtered.iterrows():
-            date_str = row['date'].strftime('%b %d, %Y') if pd.notna(row['date']) else "Unknown Date"
-            layoffs = int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'
-            with st.expander(f"{date_str} — {row['agency_name']}"):
+            article_date = row['date'].strftime('%b %d, %Y') if pd.notna(row['date']) else "Unknown Date"
+            layoffs = f"{int(row['estimated_layoff']):,}" if pd.notna(row['estimated_layoff']) else "Unspecified"
+            with st.expander(f"{article_date} — {row['agency_name']}"):
                 st.markdown(f"**Title:** {row['article_title']}")
                 st.markdown(f"**Estimated Layoffs:** {layoffs}")
-                st.markdown(f"[Read More]({row['source_link']})")
-
-
-
+                st.markdown(f"[Read Article]({row['source_link']})")
 # === Tab 3: Alternative Career Paths ===
 with tab3:
     st.subheader("Explore Similar Occupations")
