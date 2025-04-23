@@ -7,26 +7,19 @@ import os
 
 st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wide")
 
-# === Safe CSV Reader with Encoding Fallback ===
-def safe_read_csv(path):
-    try:
-        return pd.read_csv(path, encoding="utf-8")
-    except UnicodeDecodeError:
-        return pd.read_csv(path, encoding="latin1")
-
 # === Load from Local Directory ===
 @st.cache_data
 def load_data():
-    df_ai = pd.read_csv("data/dashboard_ai_tagged_slim.csv.gz", compression="gzip")
-    df_dept_map = safe_read_csv("data/agency_department_map.csv")
-    df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
-    df_signal = safe_read_csv("data/federal_layoff_signal.csv")
+    df_ai = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression="gzip")
+    df_dept_map = pd.read_csv("data/agency_department_map.csv")
+    df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
+    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df_ai, df_dept_map, df_summary, df_signal, df_sim
 
 # Validate files exist
 required_files = [
-    "data/dashboard_ai_tagged_slim.csv.gz",
+    "data/dashboard_ai_tagged.csv.gz",
     "data/agency_department_map.csv",
     "data/dashboard_agency_state_summary.csv",
     "data/federal_layoff_signal.csv",
@@ -51,6 +44,9 @@ for df in [df_ai, df_dept_map, df_summary, df_signal]:
 
 df_sim.columns = df_sim.columns.str.lower().str.strip()
 df_sim.index = df_sim.index.str.lower().str.strip()
+
+# === Rename AI Exposure Column ===
+df_ai = df_ai.rename(columns={"ai_exposure": "ai_impact_flag"})
 
 # === Merge Department Mapping ===
 df_ai = df_ai.merge(df_dept_map.rename(columns={"agency_department": "department"}), on="agency_name", how="left")
@@ -96,7 +92,7 @@ with t2:
         job = row['occupation']
         job_subset = data_filtered[data_filtered['occupation'] == job]
         with st.expander(f"{job} - Est. Layoffs: {int(row['estimate_layoff'])}"):
-            st.dataframe(job_subset[['skill', 'estimate_layoff', 'ai_exposure']], use_container_width=True)
+            st.dataframe(job_subset[['skill', 'estimate_layoff', 'ai_impact_flag']], use_container_width=True)
 
 with t3:
     st.subheader("Federal Layoff News")
