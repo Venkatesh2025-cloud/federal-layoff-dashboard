@@ -85,19 +85,41 @@ k4.metric("🤖 AI Impact Count", f"{data_filtered['ai_impact_flag'].sum():,}")
 t1, t2, t3, t4 = st.tabs(["📊 Skills", "💼 Occupations", "📰 Layoff Signals", "🔄 Similar Occupations"])
 
 with t1:
-    st.subheader("Top Skills at Risk")
-    top_skills = data_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    fig = px.bar(top_skills, x="skill", y="estimate_layoff", title="Top At-Risk Skills")
-    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("""
+        <div style='padding: 1rem; background-color: #003366; border-radius: 6px;'>
+            <h2 style='color: white;'>🔍 Federal Layoff Intelligence Overview — <span style='font-weight:400;'>State: {}</span></h2>
+        </div>
+    """.format(state), unsafe_allow_html=True)
 
-with t2:
-    st.subheader("Occupational Breakdown")
-    top_jobs = data_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    for _, row in top_jobs.iterrows():
-        job = row['occupation']
-        job_subset = data_filtered[data_filtered['occupation'] == job]
-        with st.expander(f"{job} - Est. Layoffs: {int(row['estimate_layoff'])}"):
-            st.dataframe(job_subset[['skill', 'estimate_layoff', 'ai_impact_flag']], use_container_width=True)
+    k1, k2 = st.columns([2, 1])
+    with k1:
+        st.subheader("🎯 Top 5 Occupations by Estimated Layoffs")
+        top_occ = (
+            data_filtered.groupby("occupation")["estimate_layoff"]
+            .sum().sort_values(ascending=False).head(5).reset_index()
+        )
+        fig_occ = px.bar(top_occ, x="occupation", y="estimate_layoff",
+                         labels={"estimate_layoff": "Layoffs"},
+                         title="Top Occupations", color="estimate_layoff")
+        st.plotly_chart(fig_occ, use_container_width=True)
+
+    with k2:
+        st.subheader("⚙️ Quick Summary")
+        st.metric("Occupations Tracked", f"{data_filtered['occupation'].nunique():,}")
+        st.metric("Unique Skills", f"{data_filtered['skill'].nunique():,}")
+        st.metric("Total Layoffs", f"{int(data_filtered['estimate_layoff'].sum()):,}")
+
+    # 🔍 DRILL-DOWN: Skills Per Occupation
+    st.markdown("### 🧠 Skill Insights per Occupation")
+    for job in top_occ["occupation"]:
+        job_data = data_filtered[data_filtered["occupation"] == job]
+        top_skills = job_data.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
+
+        with st.expander(f"💼 {job} — Top Skills at Risk"):
+            chart = px.bar(top_skills, x="skill", y="estimate_layoff", color="estimate_layoff",
+                           labels={"estimate_layoff": "Estimated Layoff"}, title=f"{job}: Top Skills at Risk")
+            st.plotly_chart(chart, use_container_width=True)
+            st.dataframe(job_data[["skill", "estimate_layoff", "ai_impact_flag"]], use_container_width=True)
 
 with t3:
     st.subheader("Federal Layoff News")
