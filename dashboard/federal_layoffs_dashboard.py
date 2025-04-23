@@ -1,10 +1,14 @@
-import streamlit as st
+
+# federal_layoffs_dashboard_visual_enhanced.py
+
 import pandas as pd
+import streamlit as st
 import plotly.express as px
 import altair as alt
 import os
 
-# Inject custom CSS
+
+# === Custom CSS Loader ===
 def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
     try:
         with open(file_path) as f:
@@ -12,13 +16,14 @@ def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
     except FileNotFoundError:
         st.warning("⚠️ Custom style file not found.")
 
-# ✅ Set page configuration safely
-st.set_page_config(
-    page_title="🧠 Federal Layoffs & Skills Intelligence",
-    layout="wide"
-)
 
-inject_custom_css()
+# === Custom CSS Loader ===
+def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
+    try:
+        with open(file_path) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("⚠️ Custom style file not found.")
 
 
 # === Custom CSS Loader ===
@@ -33,6 +38,27 @@ st.set_page_config(
     page_title="🧠 Federal Layoffs & Skills Intelligence",
     layout="wide"
 )
+inject_custom_css()
+
+st.markdown("""
+<style>
+/* Sidebar selectbox styling */
+[data-testid="stSidebar"] select {
+    border: 2px solid #ddd !important;
+    border-radius: 10px !important;
+    padding: 0.55rem 0.75rem !important;
+    font-size: 1rem !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+    color: #1f2937 !important;
+    background-color: white !important;
+}
+[data-testid="stSidebar"] select:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.25) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 inject_custom_css()
 
 st.markdown("""
