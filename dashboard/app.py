@@ -3,19 +3,14 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import zipfile
 import os
 
 st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wide")
 
-# === Load from Local Directory with ZIP Handling ===
+# === Load from Local Directory ===
 @st.cache_data
 def load_data():
-    # Load zipped AI-tagged CSV
-    with zipfile.ZipFile("data/dashboard_ai_tagged.zip", "r") as z:
-        with z.open("dashboard_ai_tagged.csv") as f:
-            df_ai = pd.read_csv(f)
-
+    df_ai = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression="gzip")
     df_dept_map = pd.read_csv("data/agency_department_map.csv")
     df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
     df_signal = pd.read_csv("data/federal_layoff_signal.csv")
