@@ -1,74 +1,61 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from datetime import datetime
 
-# ----------- HEADER -----------
-st.set_page_config(page_title="Vijay's Dashboard", layout="wide")
-st.title("Hi Vijay 👋, here’s what’s happening today.")
+# Placeholder data (replace with real dataset)
+states = ['Texas', 'California', 'Florida', 'New York', 'Arkansas']
+selected_state = st.sidebar.selectbox("Select State", states)
 
-col1, col2, col3 = st.columns([4, 2, 1])
-with col1:
-    user_filter = st.text_input("User Filter", placeholder="Search or filter by user persona")
-with col2:
-    date_range = st.date_input("Select Date Range", [datetime(2023, 1, 1), datetime.today()])
-with col3:
-    st.button("🔄 Refresh")
+# Dummy Data for Selected State (to be replaced by real filtered data)
+estimated_layoffs = 15432  # Example number
+top_jobs_data = pd.DataFrame({
+    'Occupation': ['Nurse', 'Software Engineer', 'Teacher', 'Data Analyst', 'HR Specialist'],
+    'Estimated Layoffs': [3000, 2500, 1800, 1200, 800]
+})
+top_skills_data = pd.DataFrame({
+    'Skill': ['Python', 'Data Analysis', 'Communication', 'SQL', 'Project Management'],
+    'Frequency': [2200, 2000, 1800, 1700, 1600]
+})
 
-# ----------- KPI CARDS -----------
-st.markdown("### 🔢 Key Performance Indicators")
-kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-kpi1.metric("Revenue", "₹12.5M", "↑ 5%")
-kpi2.metric("Active Users", "4,320", "↓ 2%")
-kpi3.metric("Churn Rate", "1.1%", "-")
-kpi4.metric("Conversion", "2.7%", "↑ 0.3%")
+# ---------------- HEADER -----------------
+st.title("Federal Layoff Intelligence")
+st.caption(f"Overview of impacted occupations and skill clusters in {selected_state}")
 
-# ----------- TABBED CONTENT -----------
-st.markdown("### 📊 Insights Dashboard")
+# ---------------- METRIC -----------------
+st.metric("Estimated Layoffs", f"{estimated_layoffs:,}")
 
-tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "🧭 Segment Analysis", "🌍 Geographic View", "⚙️ Operational Insights"])
+# ---------------- LAYOUT -----------------
+tab1, tab2 = st.tabs(["Federal Layoff Intelligence", "Layoff News"])
 
+# ---------------- TAB 1: Layoff Intelligence -----------------
 with tab1:
-    st.subheader("Engagement Trends Over Time")
-    st.caption("Spot anomalies, surges, or drop-offs in performance")
-    data = pd.DataFrame({
-        "date": pd.date_range(start="2024-01-01", periods=100),
-        "value": pd.Series(range(100)).apply(lambda x: x + (x%7)*2)
-    })
-    line_chart = alt.Chart(data).mark_line().encode(x='date', y='value')
-    st.altair_chart(line_chart, use_container_width=True)
+    st.subheader(f"Top 5 Occupations Affected by Layoffs in {selected_state}")
+    chart_jobs = alt.Chart(top_jobs_data).mark_bar().encode(
+        x=alt.X('Estimated Layoffs:Q', title='Layoffs'),
+        y=alt.Y('Occupation:N', sort='-x'),
+        tooltip=['Occupation', 'Estimated Layoffs']
+    ).properties(height=300)
+    st.altair_chart(chart_jobs, use_container_width=True)
 
+    st.subheader("Top 5 Skills in Affected Occupations")
+    chart_skills = alt.Chart(top_skills_data).mark_bar().encode(
+        x=alt.X('Frequency:Q', title='Mentions in Job Data'),
+        y=alt.Y('Skill:N', sort='-x'),
+        tooltip=['Skill', 'Frequency']
+    ).properties(height=300)
+    st.altair_chart(chart_skills, use_container_width=True)
+
+# ---------------- TAB 2: Layoff News -----------------
 with tab2:
-    st.subheader("User Segment Analysis")
-    st.caption("Identify user behaviors by persona or cohort")
-    st.selectbox("Filter by Persona", options=["All", "New Users", "Returning Users", "Churn Risk"])
-    st.bar_chart([3, 6, 2, 4])
+    st.subheader(f"Recent Layoff News in {selected_state}")
+    layoff_news = pd.DataFrame({
+        'Company': ['HealthCorp', 'FinTechX', 'EduSpark'],
+        'Sector': ['Healthcare', 'Finance', 'Education'],
+        'Impact': ['2,500', '1,800', '1,200'],
+        'Date': ['2025-04-01', '2025-03-15', '2025-03-10']
+    })
+    st.dataframe(layoff_news)
 
-with tab3:
-    st.subheader("Geographic Distribution")
-    st.caption("Where are users coming from?")
-    st.map(pd.DataFrame({
-        'lat': [19.0760, 28.6139, 13.0827],
-        'lon': [72.8777, 77.2090, 80.2707]
-    }))
-
-with tab4:
-    st.subheader("Operational Insights")
-    st.caption("Backend/API/system health at a glance")
-    st.bar_chart([10, 20, 15, 35])
-
-# ----------- DATA TABLE -----------
-st.markdown("### 🔍 Advanced Table View")
-
-with st.expander("🔧 Filter Panel"):
-    st.multiselect("Select Columns", options=["User ID", "Event Type", "Timestamp", "Location"])
-    st.checkbox("Show only anomalies")
-
-st.download_button("Download CSV", data.to_csv(index=False), file_name="export.csv")
-
-st.dataframe(data.tail(10), use_container_width=True)
-
-# ----------- FOOTER -----------
+# ---------------- FOOTER -----------------
 st.markdown("---")
-st.caption("Feedback / Version 1.0 / Powered by Draup")
-
+st.caption("Powered by Draup • Last updated automatically • Prototype View")
