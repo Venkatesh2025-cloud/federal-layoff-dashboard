@@ -17,11 +17,25 @@ def load_data():
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df_ai, df_dept_map, df_summary, df_signal, df_sim
 
+# Validate files exist
+required_files = [
+    "data/dashboard_ai_tagged.csv.gz",
+    "data/agency_department_map.csv",
+    "data/dashboard_agency_state_summary.csv",
+    "data/federal_layoff_signal.csv",
+    "data/occupation_similarity_matrix.csv"
+]
+
+missing = [f for f in required_files if not os.path.exists(f)]
+if missing:
+    st.error(f"Missing required file(s): {', '.join(missing)}. Please ensure all five datasets are in the 'data/' folder.")
+    st.stop()
+
 # Load datasets
 try:
     df_ai, df_dept_map, df_summary, df_signal, df_sim = load_data()
-except FileNotFoundError:
-    st.error("One or more required files are missing in the 'data/' folder. Please ensure all five datasets are available.")
+except Exception as e:
+    st.error(f"Failed to load datasets: {e}")
     st.stop()
 
 # === Clean Column Names ===
