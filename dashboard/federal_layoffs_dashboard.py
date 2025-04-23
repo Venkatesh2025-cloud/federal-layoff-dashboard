@@ -79,16 +79,14 @@ with t1:
     top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
     fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
                         title="Top Skills by Estimated Layoffs",
-                        color="estimate_layoff",
-                        color_continuous_scale=px.colors.sequential.Blues_r)
+                        color_discrete_sequence=["#cfe2f3", "#9fc5e8", "#6fa8dc", "#3d85c6", "#073763"])
     st.plotly_chart(fig_skills, use_container_width=True)
 
     st.subheader("Top 5 Occupations by Estimated Layoffs")
     top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(5)
     fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
                      title="Top Occupations by Estimated Layoffs",
-                     color="estimate_layoff",
-                     color_continuous_scale=px.colors.sequential.Blues_r)
+                     color_discrete_sequence=["#f4cccc", "#ea9999", "#e06666", "#cc0000", "#660000"])
     st.plotly_chart(fig_jobs, use_container_width=True)
 
 with t2:
