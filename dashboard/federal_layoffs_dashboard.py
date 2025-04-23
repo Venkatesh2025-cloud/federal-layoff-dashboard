@@ -7,12 +7,19 @@ import os
 
 st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard", layout="wide")
 
+# === Safe CSV Reader ===
+def safe_read_csv(path):
+    try:
+        return pd.read_csv(path, encoding="utf-8")
+    except UnicodeDecodeError:
+        return pd.read_csv(path, encoding="latin1")
+
 # === Load Datasets ===
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/dashboard_ai_tagged_cleaned.csv")
-    df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
-    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
+    df = safe_read_csv("data/dashboard_ai_tagged_cleaned.csv")
+    df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
+    df_signal = safe_read_csv("data/federal_layoff_signal.csv")
     df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
     return df, df_summary, df_signal, df_sim
 
