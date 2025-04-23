@@ -63,7 +63,7 @@ df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].repl
 
 # === Sidebar ===
 with st.sidebar:
-    st.markdown("<div class='sidebar-title'>Filter Options</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-title'>📌Filter Options</div>", unsafe_allow_html=True)
     selected_state = st.selectbox("Select a State", sorted(df['state'].unique()))
 df_filtered = df[df['state'] == selected_state]
 
