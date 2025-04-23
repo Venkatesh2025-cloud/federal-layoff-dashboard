@@ -171,3 +171,39 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# === Tabs Section ===
+tab1, tab2, tab3 = st.tabs(["Layoff Intelligence", "Layoff Signals", "Alternative Career Paths"])
+
+# === Tab 1: Layoff Intelligence ===
+with tab1:
+    st.markdown("""
+    <div class='alt-container'>
+    <h4 style="margin-bottom: 0.5rem;">Top Skills at Risk</h4>
+    """, unsafe_allow_html=True)
+
+    skill_top_n = st.radio("Select number of top skills", options=[5, 10], horizontal=True)
+    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(skill_top_n)
+    top_skills['skill'] = top_skills['skill'].str.title()
+    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", 
+                        title=f"Top {skill_top_n} Skills by Estimated Layoffs in {selected_state}",
+                        color="estimate_layoff",
+                        color_continuous_scale=px.colors.sequential.Teal)
+    fig_skills.update_layout(xaxis_title="Skill", yaxis_title="Layoffs", title_font=dict(size=16))
+    st.plotly_chart(fig_skills, use_container_width=True)
+
+    st.markdown("""
+    <h4 style="margin-top: 1.5rem;">Top Occupations at Risk</h4>
+    """, unsafe_allow_html=True)
+
+    job_top_n = st.radio("Select number of top occupations", options=[5, 10], horizontal=True)
+    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(job_top_n)
+    top_jobs['occupation'] = top_jobs['occupation'].str.title()
+    fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
+                     title=f"Top {job_top_n} Occupations by Estimated Layoffs in {selected_state}",
+                     color="estimate_layoff",
+                     color_continuous_scale=px.colors.sequential.Blues)
+    fig_jobs.update_layout(xaxis_title="Occupation", yaxis_title="Layoffs", title_font=dict(size=16))
+    st.plotly_chart(fig_jobs, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
