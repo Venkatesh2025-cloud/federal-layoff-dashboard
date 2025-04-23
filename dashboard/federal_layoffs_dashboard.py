@@ -78,7 +78,7 @@ k1, k2, k3, k4 = st.columns(4)
 k1.metric("👥 Total Workforce", f"{data_filtered['employee_count_2024'].sum():,}")
 k2.metric("⚠️ Estimated Layoffs", f"{data_filtered['estimate_layoff'].sum():,}")
 k3.metric("🔧 Unique Skills", f"{data_filtered['skill'].nunique():,}")
-k4.metric("🤖 AI Exposure Count", f"{data_filtered['ai_exposure'].sum():,}")
+k4.metric("🤖 AI Exposure Count", f"{data_filtered['ai_impact_flag'].sum():,}")
 
 # === Tabs ===
 t1, t2, t3, t4 = st.tabs(["📊 Skills", "💼 Occupations", "📰 Layoff Signals", "🔄 Similar Occupations"])
