@@ -76,32 +76,33 @@ st.markdown("""
     justify-content: space-between;
     align-items: center;
     background-color: #003366;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
+    padding: 0.3rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 0.3rem;
     margin-top: 0.3rem;
     color: white;
     font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
     font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    border: 2px solid #00264d;
 }
 .header-strip .logo {
-    height: 36px;
+    height: 42px;
 }
 .kpi-container {
     display: flex;
     justify-content: space-between;
     gap: 1.2rem;
-    margin-top: 0.5rem;
-    margin-bottom: 1.2rem;
+    margin-top: 0.3rem;
+    margin-bottom: 1.0rem;
 }
 .kpi-card {
     flex: 1;
     background: rgba(240, 248, 255, 0.45);
     border-left: 6px solid transparent;
     border-radius: 14px;
-    padding: 1.4rem;
+    padding: 1.2rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
