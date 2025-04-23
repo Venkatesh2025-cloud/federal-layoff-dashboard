@@ -11,7 +11,7 @@ import os
 st.set_page_config(
     page_title='Federal Layoffs & Skills Intelligence',
     layout='wide',
-    page_icon='draup_logo_64x64.png'
+    page_icon='white-logo (1).png''
 )
 
 
