@@ -76,18 +76,18 @@ st.markdown("""
     justify-content: space-between;
     align-items: center;
     background-color: #003366;
-    padding: 0.7rem 1.5rem;
+    padding: 0.75rem 1.2rem;
     border-radius: 8px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.8rem;  /* Reduced gap below header */
     margin-top: 0.3rem;
     color: white;
-    font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 1.4rem;
-    font-weight: 500;
+    font-weight: 600;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .header-strip .logo {
-    height: 34px;
+    height: 36px;  /* Slightly increased logo size */
 }
 </style>
 <div class='header-strip'>
@@ -95,6 +95,7 @@ st.markdown("""
     <img class='logo' src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # === KPI Cards Refined ===
