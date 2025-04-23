@@ -124,7 +124,7 @@ st.markdown("""
 }
 .kpi-text p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     color: #475569;
 }
 </style>
