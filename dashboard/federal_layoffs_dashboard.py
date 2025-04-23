@@ -96,8 +96,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
-
 # === KPI Cards Refined ===
 st.markdown("""
 <style>
