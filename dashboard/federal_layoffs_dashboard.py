@@ -90,57 +90,6 @@ st.markdown("""
 .header-strip .logo {
     height: 46px;
 }
-.kpi-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 1.0rem;
-    margin-top: 1.0rem;
-    margin-bottom: 1.0rem;
-}
-.kpi-card {
-    flex: 1;
-    background: rgba(240, 248, 255, 0.45);
-    border-left: 6px solid transparent;
-    border-radius: 14px;
-    padding: 1.2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
-}
-.kpi-card.workforce { background-color: #ecfdf5; border-left-color: #34d399; }
-.kpi-card.layoffs { background-color: #fefce8; border-left-color: #facc15; }
-.kpi-card.skills { background-color: #eff6ff; border-left-color: #60a5fa; }
-.kpi-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    font-size: 1.3rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f3f4f6;
-}
-.kpi-text h4 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
-    font-family: 'Inter', sans-serif;
-}
-.kpi-text p {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #6b7280;
-    font-family: 'Inter', sans-serif;
-}
 </style>
 <div class='header-strip'>
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
@@ -148,80 +97,77 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="kpi-container">
-    <div class="kpi-card workforce">
-        <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" style="width: 24px; height: 24px;">
-        </div>
-        <div class="kpi-text">
-            <h4>{df_filtered['talent_size'].sum():,}</h4>
-            <p>Total Workforce</p>
-        </div>
-    </div>
-    <div class="kpi-card layoffs">
-        <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/595/595067.png" style="width: 24px; height: 24px;">
-        </div>
-        <div class="kpi-text">
-            <h4>{df_filtered['estimate_layoff'].sum():,}</h4>
-            <p>Estimated Layoffs</p>
-        </div>
-    </div>
-    <div class="kpi-card skills">
-        <div class="kpi-icon">
-            <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" style="width: 24px; height: 24px;">
-        </div>
-        <div class="kpi-text">
-            <h4>{df_filtered['skill'].nunique():,}</h4>
-            <p>Unique Skills</p>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# === Tabs Section ===
+tab1, tab2, tab3 = st.tabs(["📊 Layoff Intelligence", "📰 Layoff Signals", "🔁 Alternative Career Paths"])
 
-# === Top 10 Skills at Risk ===
-st.markdown("""
-<div class='alt-container'>
-<h4 style="margin-bottom: 0.5rem;">🔥 Top 10 Skills at Risk</h4>
-""", unsafe_allow_html=True)
+# === Tab 1: Layoff Intelligence ===
+with tab1:
+    st.markdown("""
+    <div class='alt-container'>
+    <h4 style="margin-bottom: 0.5rem;">🔥 Top 10 Skills at Risk</h4>
+    """, unsafe_allow_html=True)
 
-top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-top_skills['skill'] = top_skills['skill'].str.title()
-fig_skills = px.bar(top_skills, x="estimate_layoff", y="skill", orientation='h',
-                    title=f"Top Skills by Estimated Layoffs in {selected_state}",
-                    color="estimate_layoff",
-                    color_continuous_scale=px.colors.sequential.Teal)
-fig_skills.update_layout(xaxis_title="Layoffs", yaxis_title="Skill", title_font=dict(size=16))
-st.plotly_chart(fig_skills, use_container_width=True)
+    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    top_skills['skill'] = top_skills['skill'].str.title()
+    fig_skills = px.bar(top_skills, x="estimate_layoff", y="skill", orientation='h',
+                        title=f"Top Skills by Estimated Layoffs in {selected_state}",
+                        color="estimate_layoff",
+                        color_continuous_scale=px.colors.sequential.Teal)
+    fig_skills.update_layout(xaxis_title="Layoffs", yaxis_title="Skill", title_font=dict(size=16))
+    st.plotly_chart(fig_skills, use_container_width=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# === Similar Occupation Explorer ===
-st.markdown("""
-<div class='alt-container'>
-<h4 style="margin-bottom: 0.5rem;">
-    🔁 Similar Occupation Explorer
-</h4>
-""", unsafe_allow_html=True)
+# === Tab 2: Layoff Signals ===
+with tab2:
+    st.markdown("""
+    <div class='alt-container'>
+    <h4 style="margin-bottom: 0.5rem;">📰 Federal Layoff Signals</h4>
+    """, unsafe_allow_html=True)
+    df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+    if df_signal_filtered.empty:
+        st.info("No layoff news found for the selected state.")
+    else:
+        chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
+            x=alt.X('date:T', title='Date'),
+            y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
+            color=alt.Color('agency_name:N', title='Agency'),
+            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
+        ).properties(title="Layoff Events Timeline")
+        st.altair_chart(chart, use_container_width=True)
 
-df['occupation_display'] = df['occupation'].str.title()
-selected_occ = st.selectbox("Select an Occupation", sorted(df['occupation_display'].unique()))
-selected_key = selected_occ.lower().strip()
+        st.markdown("### 🗞️ Layoff News Articles")
+        for _, row in df_signal_filtered.iterrows():
+            with st.expander(f"{row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
+                st.markdown(f"**📝 Title**: {row['article_title']}")
+                st.markdown(f"**🔢 Estimated Layoffs**: {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
+                st.markdown(f"[🔗 Source]({row['source_link']})")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-if selected_key in df_sim.index:
-    similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
-    similar_df.columns = ['occupation', 'similarity']
-    similar_df['occupation'] = similar_df['occupation'].str.title()
+# === Tab 3: Alternative Career Paths ===
+with tab3:
+    st.markdown("""
+    <div class='alt-container'>
+    <h4 style="margin-bottom: 0.5rem;">🔁 Similar Occupation Explorer</h4>
+    """, unsafe_allow_html=True)
 
-    fig3 = px.bar(similar_df, x="similarity", y="occupation", orientation="h",
-                  title=f"Occupations Similar to: {selected_occ}",
-                  color="similarity",
-                  color_continuous_scale=px.colors.sequential.Oranges)
+    df['occupation_display'] = df['occupation'].str.title()
+    selected_occ = st.selectbox("Select an Occupation", sorted(df['occupation_display'].unique()))
+    selected_key = selected_occ.lower().strip()
 
-    fig3.update_layout(xaxis_title="Similarity Score", yaxis_title="", title_font=dict(size=16))
-    st.plotly_chart(fig3, use_container_width=True)
-else:
-    st.warning("⚠️ Similarity data not available for this occupation.")
+    if selected_key in df_sim.index:
+        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+        similar_df.columns = ['occupation', 'similarity']
+        similar_df['occupation'] = similar_df['occupation'].str.title()
 
-st.markdown("</div>", unsafe_allow_html=True)
+        fig3 = px.bar(similar_df, x="similarity", y="occupation", orientation="h",
+                      title=f"Occupations Similar to: {selected_occ}",
+                      color="similarity",
+                      color_continuous_scale=px.colors.sequential.Oranges)
+
+        fig3.update_layout(xaxis_title="Similarity Score", yaxis_title="", title_font=dict(size=16))
+        st.plotly_chart(fig3, use_container_width=True)
+    else:
+        st.warning("⚠️ Similarity data not available for this occupation.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
