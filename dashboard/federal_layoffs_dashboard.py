@@ -207,3 +207,45 @@ with tab1:
     st.plotly_chart(fig_jobs, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+# === Tab 2: Layoff Signals ===
+with tab2:
+    st.subheader(f"Layoff News & Timeline in {selected_state}")
+    df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+
+    if df_signal_filtered.empty:
+        st.info("No layoff news found for the selected state.")
+    else:
+        chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
+            x=alt.X('date:T', title='Date'),
+            y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
+            color=alt.Color('agency_name:N', title='Agency'),
+            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
+        ).properties(title="Layoff Events Timeline")
+        st.altair_chart(chart, use_container_width=True)
+
+        st.markdown("### Layoff News Articles")
+        for _, row in df_signal_filtered.iterrows():
+            with st.expander(f"{row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
+                st.markdown(f"**Title:** {row['article_title']}")
+                layoffs = int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'
+                st.markdown(f"**Estimated Layoffs:** {layoffs}")
+                st.markdown(f"[Read More]({row['source_link']})")
+
+# === Tab 3: Alternative Career Paths ===
+with tab3:
+    st.subheader("Explore Similar Occupations")
+    selected_occ = st.selectbox("Choose an occupation", sorted(df_filtered['occupation'].dropna().unique()))
+    selected_key = selected_occ.lower().strip()
+
+    if selected_key in df_sim.index:
+        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+        similar_df.columns = ['occupation', 'similarity']
+        fig_sim = px.bar(similar_df, x='occupation', y='similarity',
+                         title=f"Most Similar Occupations to {selected_occ}",
+                         color='similarity',
+                         color_continuous_scale=px.colors.sequential.Oranges)
+        fig_sim.update_layout(xaxis_title="Occupation", yaxis_title="Similarity Score")
+        st.plotly_chart(fig_sim, use_container_width=True)
+    else:
+        st.warning("Similarity data not available for the selected occupation.")
