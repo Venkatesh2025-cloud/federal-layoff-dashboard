@@ -60,6 +60,16 @@ with st.sidebar:
 
 df_filtered = df[df['state'] == selected_state]
 
+
+# === Optional Logo Placement ===
+st.markdown("""
+    <div style='display: flex; align-items: center; margin-bottom: 1rem;'>
+        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Draup_logo.png/320px-Draup_logo.png'
+             style='height: 60px; margin-right: 1rem;' />
+        <div style='font-size: 1.4rem; font-weight: 600; font-family: "Segoe UI", sans-serif;'>Draup Intelligence Platform</div>
+    </div>
+""", unsafe_allow_html=True)
+
 # === Header ===
 st.markdown("""
 <style>
