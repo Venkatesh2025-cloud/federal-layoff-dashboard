@@ -94,7 +94,7 @@ st.markdown("""
     display: flex;
     justify-content: space-between;
     gap: 1.0rem;
-    margin-top: 1.2rem;
+    margin-top: 2rem; /* Increased from 1.2rem for more breathing room */
     margin-bottom: 1.0rem;
 }
 .kpi-card {
@@ -206,9 +206,9 @@ with st.container():
         similar_df.columns = ['Occupation', 'Similarity']
         similar_df['Occupation'] = similar_df['Occupation'].str.title()
         fig_sim = px.bar(similar_df, x='Similarity', y='Occupation', orientation='h',
-                         title=f"👥 Similar to: {selected_occ}",
+                         title=f"Similar to: {selected_occ}",
                          color='Similarity',
-                         text_auto=True,
+                         text_auto='.2f',
                          color_continuous_scale=px.colors.sequential.Teal)
         fig_sim.update_layout(xaxis_title="Similarity Score", yaxis_title="Occupation",
                               plot_bgcolor='rgba(0,0,0,0)', xaxis=dict(showgrid=False))
