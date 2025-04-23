@@ -7,7 +7,18 @@ import plotly.express as px
 import altair as alt
 import os
 
-st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard", layout="wide")
+st.set_page_config(
+
+# === Custom CSS Loader ===
+def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
+    try:
+        with open(file_path) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("⚠️ Custom style file not found.")
+
+inject_custom_css()
+
 
 # === Load CSV with Safe Encoding ===
 def safe_read_csv(path):
