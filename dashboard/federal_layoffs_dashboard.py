@@ -90,11 +90,6 @@ st.markdown("""
 .header-strip .logo {
     height: 46px;
 }
-.radio-section {
-    margin-bottom: 2rem;
-    margin-top: 1.2rem;
-    padding-left: 10px;
-}
 </style>
 <div class='header-strip'>
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
@@ -112,10 +107,7 @@ with tab1:
     <h4 style="margin-bottom: 0.5rem;">Top Skills at Risk</h4>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='radio-section'>", unsafe_allow_html=True)
     skill_top_n = st.radio("Select number of top skills", options=[5, 10], horizontal=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
     top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(skill_top_n)
     top_skills['skill'] = top_skills['skill'].str.title()
     fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", 
@@ -129,10 +121,7 @@ with tab1:
     <h4 style="margin-top: 1.5rem;">Top Occupations at Risk</h4>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='radio-section'>", unsafe_allow_html=True)
     job_top_n = st.radio("Select number of top occupations", options=[5, 10], horizontal=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
     top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(job_top_n)
     top_jobs['occupation'] = top_jobs['occupation'].str.title()
     fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
