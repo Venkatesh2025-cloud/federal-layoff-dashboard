@@ -280,6 +280,7 @@ with tab2:
 
     # === Export Filtered Data Option ===
     st.download_button("Download CSV", df_signal_filtered.to_csv(index=False), "filtered_layoff_signals.csv")
+
     
 # === Tab 3: Alternative Career Paths ===
 with tab3:
