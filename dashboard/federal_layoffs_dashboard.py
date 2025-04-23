@@ -10,7 +10,7 @@ import os
 st.set_page_config(
     page_title='Federal Layoffs & Skills Intelligence',
     layout='wide',
-    page_icon='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg'
+    page_icon='draup_logo_64x64.png'
 )
 
 
