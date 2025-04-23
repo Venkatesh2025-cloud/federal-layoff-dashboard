@@ -140,7 +140,7 @@ with t3:
         fig_sim = px.bar(similar_df, x='occupation', y='similarity',
                          title=f"Most Similar to {selected_occ}",
                          color='similarity',
-                         color_continuous_scale=px.colors.sequential.Oranges)
+                         color_continuous_scale=px.colors.sequential.Greens)
         st.plotly_chart(fig_sim, use_container_width=True)
     else:
         st.info("Similarity data not available for this occupation.")
