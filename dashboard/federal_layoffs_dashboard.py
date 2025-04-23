@@ -322,7 +322,7 @@ with tab3:
         fig_sim = px.bar(similar_df, x='Similarity Score', y='Occupation',
                          orientation='h',
                          color='Similarity Score',
-                         color_continuous_scale=px.colors.sequential.Purples,
+                         color_continuous_scale=px.colors.sequential.Teal,
                          title=f"Top Alternative Careers for: {selected_occ}")
         fig_sim.update_layout(
             title_font=dict(size=16),
