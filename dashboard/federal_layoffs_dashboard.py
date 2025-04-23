@@ -76,9 +76,9 @@ st.markdown("""
     justify-content: space-between;
     align-items: center;
     background-color: #003366;
-    padding: 0.75rem 1.2rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 8px;
-    margin-bottom: 0.8rem;  /* Reduced gap below header */
+    margin-bottom: 0.5rem;  /* Even tighter spacing */
     margin-top: 0.3rem;
     color: white;
     font-family: 'Inter', sans-serif;
@@ -87,7 +87,7 @@ st.markdown("""
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .header-strip .logo {
-    height: 36px;  /* Slightly increased logo size */
+    height: 36px;
 }
 </style>
 <div class='header-strip'>
