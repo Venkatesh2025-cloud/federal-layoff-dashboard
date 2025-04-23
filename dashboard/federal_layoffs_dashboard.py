@@ -108,18 +108,26 @@ st.markdown("""
 }
 .kpi-card {
     flex: 1;
-    background: #ffffff;
+    background: rgba(240, 248, 255, 0.45); /* light base layer */
+    border-left: 6px solid transparent; /* placeholder for color cues */
     border-radius: 14px;
     padding: 1.4rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .kpi-card:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
 }
+
+/* Specific card cues */
+.kpi-card.workforce { background-color: #ecfdf5; border-left-color: #34d399; }
+.kpi-card.layoffs { background-color: #fefce8; border-left-color: #facc15; }
+.kpi-card.skills { background-color: #eff6ff; border-left-color: #60a5fa; }
 .kpi-icon {
     width: 50px;
     height: 50px;
@@ -150,8 +158,8 @@ st.markdown("""
 
 st.markdown(f"""
 <div class="kpi-container">
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background-color: #d1fae5; color: #059669;">
+    <div class="kpi-card workforce">
+        <div class="kpi-icon" style="background-color: #d1fae5;">
             <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
@@ -159,8 +167,8 @@ st.markdown(f"""
             <p>Total Workforce</p>
         </div>
     </div>
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background-color: #fef3c7; color: #b45309;">
+    <div class="kpi-card layoffs">
+        <div class="kpi-icon" style="background-color: #fef3c7;">
             <img src="https://cdn-icons-png.flaticon.com/512/595/595067.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
@@ -168,8 +176,8 @@ st.markdown(f"""
             <p>Estimated Layoffs</p>
         </div>
     </div>
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">
+    <div class="kpi-card skills">
+        <div class="kpi-icon" style="background-color: #dbeafe;">
             <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
