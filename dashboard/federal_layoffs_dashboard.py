@@ -1,5 +1,5 @@
 
-# federal_layoffs_dashboard_final.py
+# federal_layoffs_dashboard_final_fixed.py
 
 import pandas as pd
 import streamlit as st
@@ -44,6 +44,9 @@ with st.spinner("Loading datasets..."):
 df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
 df_summary.columns = df_summary.columns.str.lower().str.strip().str.replace(" ", "_")
 df_signal.columns = df_signal.columns.str.lower().str.strip().str.replace(" ", "_")
+
+# Fix column mismatch in df_summary
+df_summary.rename(columns={"agency_department": "agency_name"}, inplace=True)
 
 df['state'] = df['state'].str.title().str.strip()
 df_summary['state'] = df_summary['state'].str.title().str.strip()
