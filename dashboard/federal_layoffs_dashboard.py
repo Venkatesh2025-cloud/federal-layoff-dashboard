@@ -81,7 +81,7 @@ st.markdown("""
     margin-bottom: 1.5rem;
     margin-top: 0.3rem;
     color: white;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
     font-size: 1.4rem;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
