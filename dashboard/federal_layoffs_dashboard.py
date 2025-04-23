@@ -109,62 +109,31 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === Layoff Timeline & News Feed ===
+# === Similar Occupation Explorer ===
 st.markdown("""
 <div class='alt-container'>
 <h4 style="margin-bottom: 0.5rem;">
-    🗞️ Federal Layoff Events Timeline
+    🔁 Similar Occupation Explorer
 </h4>
 """, unsafe_allow_html=True)
 
-df_signal_filtered = df_signal[df_signal['state'] == selected_state]
-if not df_signal_filtered.empty:
-    chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
-        x=alt.X('date:T', title='Date'),
-        y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
-        color=alt.Color('agency_name:N', title='Agency'),
-        tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
-    ).properties(title="Layoff Timeline", height=280)
-    st.altair_chart(chart, use_container_width=True)
+df['occupation_display'] = df['occupation'].str.title()
+selected_occ = st.selectbox("Select an Occupation", sorted(df['occupation_display'].unique()))
+selected_key = selected_occ.lower().strip()
 
-    st.markdown("### 📰 Layoff News Articles")
-    for _, row in df_signal_filtered.iterrows():
-        with st.expander(f"📅 {row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
-            st.markdown(f"**📝 Title:** {row['article_title']}")
-            st.markdown(f"**📊 Estimated Layoffs:** {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
-            st.markdown(f"[🔗 Source Link]({row['source_link']})")
+if selected_key in df_sim.index:
+    similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+    similar_df.columns = ['occupation', 'similarity']
+    similar_df['occupation'] = similar_df['occupation'].str.title()
+
+    fig3 = px.bar(similar_df, x="similarity", y="occupation", orientation="h",
+                  title=f"Occupations Similar to: {selected_occ}",
+                  color="similarity",
+                  color_continuous_scale=px.colors.sequential.Oranges)
+
+    fig3.update_layout(xaxis_title="Similarity Score", yaxis_title="", title_font=dict(size=16))
+    st.plotly_chart(fig3, use_container_width=True)
 else:
-    st.info("🚫 No layoff events found for the selected state.")
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# === Top Skills & Occupations ===
-st.markdown("""
-<div class='alt-container'>
-<h4 style="margin-bottom: 0.5rem;">
-    📊 Top Skills & Top Occupations by Estimated Layoffs
-</h4>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-
-with col1:
-    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    fig1 = px.bar(top_skills, x="estimate_layoff", y="skill", orientation="h",
-                  title="Top Skills by Estimated Layoffs",
-                  color="estimate_layoff",
-                  color_continuous_scale=px.colors.sequential.Teal)
-    fig1.update_layout(xaxis_title="Layoffs", yaxis_title="", title_font=dict(size=16))
-    st.plotly_chart(fig1, use_container_width=True)
-
-with col2:
-    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    top_jobs['occupation'] = top_jobs['occupation'].str.title()
-    fig2 = px.bar(top_jobs, x="estimate_layoff", y="occupation", orientation="h",
-                  title="Top Occupations by Estimated Layoffs",
-                  color="estimate_layoff",
-                  color_continuous_scale=px.colors.sequential.Blues)
-    fig2.update_layout(xaxis_title="Layoffs", yaxis_title="", title_font=dict(size=16))
-    st.plotly_chart(fig2, use_container_width=True)
+    st.warning("⚠️ Similarity data not available for this occupation.")
 
 st.markdown("</div>", unsafe_allow_html=True)
