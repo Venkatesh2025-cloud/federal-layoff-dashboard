@@ -76,27 +76,27 @@ st.markdown("""
 
 # === KPI Section ===
 st.markdown("""
-<div style="display: flex; justify-content: space-around;">
-    <div style="background: #e0f7f1; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.5rem; font-weight: bold; color: #00695c;">{:,}</div>
-        <div style="color: #444;">Total Workforce</div>
+<div style="display: flex; justify-content: space-around; font-family: 'Inter', sans-serif;">
+    <div style="background: #f0fdf4; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #34a853;">{:,}</div>
+        <div style="color: #444; font-size: 0.95rem;">Total Workforce</div>
     </div>
-    <div style="background: #fff3cd; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.5rem; font-weight: bold; color: #b35f00;">{:,}</div>
-        <div style="color: #444;">Estimated Layoffs</div>
+    <div style="background: #fff7ed; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #f9a825;">{:,}</div>
+        <div style="color: #444; font-size: 0.95rem;">Estimated Layoffs</div>
     </div>
-    <div style="background: #e8f0fe; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.5rem; font-weight: bold; color: #1e88e5;">{:,}</div>
-        <div style="color: #444;">Unique Skills</div>
+    <div style="background: #e3f2fd; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
+        <div style="font-size: 1.7rem; font-weight: 600; color: #1e88e5;">{:,}</div>
+        <div style="color: #444; font-size: 0.95rem;">Unique Skills</div>
     </div>
 </div>
 """.format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
 
 # === Tabs ===
 t1, t2, t3 = st.tabs([
-    "<span style='color:#ec407a;'>🧠 Federal Layoff Intelligence</span>",
-    "<span style='color:#6d4c41;'>📰 Layoff News</span>",
-    "<span style='color:#fb8c00;'>🔁 Similar Occupations (Optional)</span>"
+    "🧠 Federal Layoff Intelligence",
+    "📰 Layoff News",
+    "🟠 Similar Occupations (Optional)"
 ])
 
 with t1:
