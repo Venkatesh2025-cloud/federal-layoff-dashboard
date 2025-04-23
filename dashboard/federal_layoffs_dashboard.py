@@ -8,6 +8,9 @@ import altair as alt
 import os
 
 st.set_page_config(
+    page_title="🧠 Federal Layoffs & Skills Intelligence",
+    layout="wide"
+)
 
 # === Custom CSS Loader ===
 def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
