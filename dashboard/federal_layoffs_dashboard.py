@@ -8,12 +8,14 @@ import altair as alt
 import os
 
 st.set_page_config(
-    page_title='🧠 Federal Layoffs & Skills Intelligence',
-    layout='wide'
+    page_title='Federal Layoffs & Skills Intelligence',
+    layout='wide',
+    page_icon='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg'
 )
 
+
 # === Custom CSS Loader ===
-def inject_custom_css(file_path="dashboard/streamlit_dashboard_custom_style.css"):
+def inject_custom_css(file_path="streamlit_dashboard_custom_style.css"):
     try:
         with open(file_path) as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
