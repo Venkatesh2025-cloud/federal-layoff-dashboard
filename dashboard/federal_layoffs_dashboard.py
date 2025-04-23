@@ -118,13 +118,13 @@ st.markdown("""
 }
 .kpi-text h4 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #0f172a;
 }
 .kpi-text p {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #475569;
 }
 </style>
