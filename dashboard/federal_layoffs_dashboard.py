@@ -9,7 +9,7 @@ import os
 st.set_page_config(
     page_title='Federal Layoffs & Skills Intelligence',
     layout='wide',
-    page_icon='dashboard/draup-logo.png'
+    page_icon='dashboard/draup-logo.svg (1) (1).png'
 )
 
 # === Custom CSS Loader ===
