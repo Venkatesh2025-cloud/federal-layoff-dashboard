@@ -57,7 +57,7 @@ df_signal['state'] = df_signal['state'].str.strip().str.title()
 
 # Convert date column and clean estimated_layoff
 df_signal['date'] = pd.to_datetime(df_signal['date'], errors='coerce')
-df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'], errors='coerce')
+df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].replace("Unspecified number", pd.NA), errors='coerce')
 
 # === Sidebar Filters ===
 st.sidebar.header("📍 Filter by State")
@@ -75,10 +75,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === KPI Section ===
-k1, k2, k3 = st.columns(3)
-k1.metric("👥 Total Workforce", f"{df_filtered['talent_size'].sum():,}")
-k2.metric("⚠️ Estimated Layoffs", f"{df_filtered['estimate_layoff'].sum():,}")
-k3.metric("🔧 Unique Skills", f"{df_filtered['skill'].nunique():,}")
+st.markdown("""
+<div style="display: flex; justify-content: space-around;">
+    <div style="background: #f4f6f8; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
+        <div style="font-size: 1.5rem; font-weight: bold; color: #2b2d42;">{:,}</div>
+        <div style="color: #888;">Total Workforce</div>
+    </div>
+    <div style="background: #fff5e5; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
+        <div style="font-size: 1.5rem; font-weight: bold; color: #d97706;">{:,}</div>
+        <div style="color: #888;">Estimated Layoffs</div>
+    </div>
+    <div style="background: #f0f7ff; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
+        <div style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">{:,}</div>
+        <div style="color: #888;">Unique Skills</div>
+    </div>
+</div>
+""".format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
 
 # === Tabs ===
 t1, t2, t3 = st.tabs(["🧠 Federal Layoff Intelligence", "📰 Layoff News", "🔁 Similar Occupations (Optional)"])
@@ -89,7 +101,7 @@ with t1:
     fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
                         title="Top Skills by Estimated Layoffs",
                         color="estimate_layoff",
-                        color_continuous_scale=px.colors.sequential.Blues[::-1])
+                        color_continuous_scale=px.colors.sequential.Tealgrn)
     st.plotly_chart(fig_skills, use_container_width=True)
 
     st.subheader("Top 10 Occupations by Estimated Layoffs")
@@ -97,7 +109,7 @@ with t1:
     fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
                      title="Top Occupations by Estimated Layoffs",
                      color="estimate_layoff",
-                     color_continuous_scale=px.colors.sequential.Purples[::-1])
+                     color_continuous_scale=px.colors.sequential.Reds)
     st.plotly_chart(fig_jobs, use_container_width=True)
 
 with t2:
@@ -128,7 +140,7 @@ with t3:
         fig_sim = px.bar(similar_df, x='occupation', y='similarity',
                          title=f"Most Similar to {selected_occ}",
                          color='similarity',
-                         color_continuous_scale=px.colors.sequential.Blues_r)
+                         color_continuous_scale=px.colors.sequential.Purples)
         st.plotly_chart(fig_sim, use_container_width=True)
     else:
         st.info("Similarity data not available for this occupation.")
