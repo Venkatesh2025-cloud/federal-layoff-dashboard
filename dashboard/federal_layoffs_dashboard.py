@@ -1,5 +1,5 @@
 
-# federal_layoffs_dashboard_final_corrected.py
+# federal_layoffs_dashboard_final_column_fixed.py
 
 import pandas as pd
 import streamlit as st
@@ -40,17 +40,13 @@ with st.spinner("Loading datasets..."):
         st.error(f"Failed to load datasets: {e}")
         st.stop()
 
-# Normalize column names
-df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
-df_summary.columns = df_summary.columns.str.lower().str.strip().str.replace(" ", "_")
-df_signal.columns = df_signal.columns.str.lower().str.strip().str.replace(" ", "_")
+# === Normalize and Rename Columns ===
+df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
 
-# Explicit column renaming to handle potential issues
-df_summary.rename(columns={
-    "agency_department": "agency_name",
-    "talentsize": "talent_size",
-    "estimatedlayoff": "estimated_layoff"
-}, inplace=True)
+df_summary.columns = df_summary.columns.str.strip().str.lower().str.replace(" ", "_")
+df_summary.rename(columns={"agency_department": "agency_name"}, inplace=True)
+
+df_signal.columns = df_signal.columns.str.strip().str.lower().str.replace(" ", "_")
 
 df['state'] = df['state'].str.title().str.strip()
 df_summary['state'] = df_summary['state'].str.title().str.strip()
