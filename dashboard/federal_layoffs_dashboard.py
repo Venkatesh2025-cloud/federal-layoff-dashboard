@@ -172,7 +172,7 @@ st.markdown(f"""
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" style="width: 24px; height: 24px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/565/565547.png" style="width: 24px; height: 24px;">
         </div>
         <div class="kpi-text">
             <h4>{df_filtered['skill'].nunique():,}</h4>
