@@ -133,13 +133,21 @@ st.markdown("""
     <span>Federal Layoffs & Skills Intelligence Dashboard</span>
     <img class='logo' src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
 </div>
+""", unsafe_allow_html=True)
+
+# === KPI Display with Safe Fallback ===
+total_workforce = df_filtered['talent_size'].sum() if 'talent_size' in df_filtered.columns else 0
+estimated_layoffs = df_filtered['estimate_layoff'].sum() if 'estimate_layoff' in df_filtered.columns else 0
+unique_skills = df_filtered['skill'].nunique() if 'skill' in df_filtered.columns else 0
+
+st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card">
         <div class="kpi-icon">
             <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" style="width: 22px;">
         </div>
         <div class="kpi-text">
-            <h4>{:,}</h4>
+            <h4>{total_workforce:,}</h4>
             <p>Total Workforce</p>
         </div>
     </div>
@@ -148,7 +156,7 @@ st.markdown("""
             <img src="https://cdn-icons-png.flaticon.com/512/595/595067.png" style="width: 22px;">
         </div>
         <div class="kpi-text">
-            <h4>{:,}</h4>
+            <h4>{estimated_layoffs:,}</h4>
             <p>Estimated Layoffs</p>
         </div>
     </div>
@@ -157,9 +165,9 @@ st.markdown("""
             <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" style="width: 22px;">
         </div>
         <div class="kpi-text">
-            <h4>{:,}</h4>
+            <h4>{unique_skills:,}</h4>
             <p>Unique Skills</p>
         </div>
     </div>
 </div>
-""".format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
