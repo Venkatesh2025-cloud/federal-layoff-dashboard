@@ -1,97 +1,96 @@
+# federal_layoffs_dashboard.py
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import os
 import zipfile
+import os
 
-st.set_page_config(page_title="Federal Workforce Skill Risk Dashboard", layout="wide")
+st.set_page_config(page_title="Federal Skill Risk & Layoff Explorer", layout="wide")
 
-# === Load Data from ZIP or FileUploader ===
-zip_path = "clean_dashboard_ai_tagged.zip"  # Updated filename
-csv_name = "clean_dashboard_ai_tagged.csv"  # Path inside the ZIP (adjusted to remove "data/" prefix)
+# === Load Datasets ===
+@st.cache_data
+def load_data():
+    df_ai = pd.read_csv("data/dashboard_ai_tagged.csv")
+    df_dept_map = pd.read_csv("data/agency_department_map.csv")
+    df_summary = pd.read_csv("data/dashboard_agency_state_summary.csv")
+    df_signal = pd.read_csv("data/federal_layoff_signal.csv")
+    df_sim = pd.read_csv("data/occupation_similarity_matrix.csv", index_col=0)
+    return df_ai, df_dept_map, df_summary, df_signal, df_sim
 
-uploaded_zip = st.sidebar.file_uploader("📁 Upload ZIP with Clean Data", type="zip")
-if uploaded_zip is not None:
-    with zipfile.ZipFile(uploaded_zip) as z:
-        with z.open(csv_name) as f:
-            df = pd.read_csv(f)
-else:
-    with zipfile.ZipFile(zip_path, 'r') as z:
-        with z.open(csv_name) as f:
-            df = pd.read_csv(f)
+df_ai, df_dept_map, df_summary, df_signal, df_sim = load_data()
 
-# === Clean Columns ===
-df.columns = df.columns.str.strip().str.lower()
+# === Clean Column Names ===
+for df in [df_ai, df_dept_map, df_summary, df_signal]:
+    df.columns = df.columns.str.lower().str.strip().str.replace(" ", "_")
+
+df_sim.columns = df_sim.columns.str.lower().str.strip()
+df_sim.index = df_sim.index.str.lower().str.strip()
+
+# === Merge Department Mapping ===
+df_ai = df_ai.merge(df_dept_map.rename(columns={"agency_department": "department"}), on="agency_name", how="left")
 
 # === Sidebar Filters ===
-st.sidebar.header("📍 Filter Options")
-selected_state = st.sidebar.selectbox("Select a State", sorted(df['location_name'].dropna().unique()))
+st.sidebar.header("🔍 Filters")
+all_states = sorted(df_ai['state'].dropna().unique())
+state = st.sidebar.selectbox("Select a State", all_states)
+agencies = sorted(df_ai[df_ai['state'] == state]['agency_name'].dropna().unique())
+agency = st.sidebar.selectbox("Agency", ["All"] + agencies)
 
-unique_skills = sorted(df['skill'].unique())
-skill_filter = st.sidebar.multiselect("Search or select skills", unique_skills)
+# === Filtered AI-tagged Data ===
+data_filtered = df_ai[df_ai['state'] == state]
+if agency != "All":
+    data_filtered = data_filtered[data_filtered['agency_name'] == agency]
 
-ai_only = st.sidebar.checkbox("Show only AI-exposed skills", value=False)
-
-filtered_df = df[df['location_name'] == selected_state]
-if skill_filter:
-    filtered_df = filtered_df[filtered_df['skill'].isin(skill_filter)]
-if ai_only:
-    filtered_df = filtered_df[filtered_df['ai_exposed'] == 1]
-
-# === KPI Row ===
+# === KPI Summary ===
 st.markdown("""
-    <h1 style='text-align: center; color: white; background-color: #003366; padding: 25px; border-radius: 8px'>
-    🧠 Federal Workforce Skill Risk Dashboard
+    <h1 style='text-align: center; background-color: #003366; color: white; padding: 1rem; border-radius: 8px;'>
+        Federal Layoffs & Skills Intelligence Dashboard
     </h1>
 """, unsafe_allow_html=True)
 
-k1, k2, k3 = st.columns(3)
-k1.metric("👥 Total Employees", f"{filtered_df['employee_count_2024'].sum():,}")
-k2.metric("⚠️ Estimated Layoffs", f"{filtered_df['layoff_estimate'].sum():,}")
-k3.metric("🔧 Unique Skills", f"{filtered_df['skill'].nunique():,}")
+k1, k2, k3, k4 = st.columns(4)
+k1.metric("👥 Total Workforce", f"{data_filtered['employee_count_2024'].sum():,}")
+k2.metric("⚠️ Estimated Layoffs", f"{data_filtered['estimate_layoff'].sum():,}")
+k3.metric("🔧 Unique Skills", f"{data_filtered['skill'].nunique():,}")
+k4.metric("🤖 AI Exposure Count", f"{data_filtered['ai_exposure'].sum():,}")
 
 # === Tabs ===
-tab1, tab2, tab3 = st.tabs(["📊 Skill Risk Explorer", "🧑‍💼 Job Role Intelligence", "🗺️ Geo Skill Map"])
+t1, t2, t3, t4 = st.tabs(["📊 Skills", "💼 Occupations", "📰 Layoff Signals", "🔄 Similar Occupations"])
 
-with tab1:
-    st.subheader(f"Top At-Risk Skills in {selected_state}")
-    skill_summary = (
-        filtered_df.groupby("skill")["layoff_estimate"]
-        .sum()
-        .reset_index()
-        .sort_values(by="layoff_estimate", ascending=False)
-    )
-
-    show_more = st.checkbox("Show full skill list", value=False)
-    display_data = skill_summary if show_more else skill_summary.head(10)
-
-    fig = px.bar(display_data, x="skill", y="layoff_estimate", color="layoff_estimate",
-                 height=400, title="🔧 Skills by Layoff Estimate",
-                 hover_data={"layoff_estimate": True})
+with t1:
+    st.subheader("Top Skills at Risk")
+    top_skills = data_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    fig = px.bar(top_skills, x="skill", y="estimate_layoff", title="Top At-Risk Skills")
     st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(display_data, use_container_width=True)
 
-with tab2:
-    st.subheader(f"Top Jobs by Layoff Estimate in {selected_state}")
-    top_jobs = (
-        filtered_df.groupby("occupation_title")["layoff_estimate"]
-        .sum()
-        .reset_index()
-        .sort_values(by="layoff_estimate", ascending=False)
-        .head(5)
-    )
+with t2:
+    st.subheader("Occupational Breakdown")
+    top_jobs = data_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
     for _, row in top_jobs.iterrows():
-        job = row["occupation_title"]
-        subset = filtered_df[filtered_df["occupation_title"] == job]
-        with st.expander(f"💼 {job} - Est. Layoffs: {int(row['layoff_estimate'])}"):
-            skill_dist = subset.groupby("skill")["layoff_estimate"].sum().reset_index()
-            fig = px.bar(skill_dist, x="skill", y="layoff_estimate", title=f"Skills at Risk in {job}")
-            st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(skill_dist, use_container_width=True)
+        job = row['occupation']
+        job_subset = data_filtered[data_filtered['occupation'] == job]
+        with st.expander(f"{job} - Est. Layoffs: {int(row['estimate_layoff'])}"):
+            st.dataframe(job_subset[['skill', 'estimate_layoff', 'ai_exposure']], use_container_width=True)
 
-with tab3:
-    st.info("🌍 Geo Map module coming soon — currently focusing on state-level skill risks.")
+with t3:
+    st.subheader("Federal Layoff News")
+    signal_filtered = df_signal[df_signal['state'] == state]
+    st.dataframe(signal_filtered[['date', 'agency_name', 'estimated_layoff', 'source_link', 'article_title']], use_container_width=True)
+
+with t4:
+    st.subheader("Explore Similar Occupations")
+    selected_job = st.selectbox("Select Occupation", sorted(df_ai['occupation'].dropna().unique()))
+    if selected_job:
+        selected_key = selected_job.lower().strip()
+        if selected_key in df_sim.index:
+            similar_jobs = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+            similar_jobs.columns = ['occupation', 'similarity_score']
+            fig = px.bar(similar_jobs, x='occupation', y='similarity_score', title=f"Most Similar Occupations to {selected_job}")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.warning("Similarity data not available for this occupation.")
 
 # === Footer ===
 st.markdown("---")
-st.caption("Built for workforce planning and skill risk intelligence | Streamlit SaaS Design")
+st.caption("Built by Data Scientist & UX Strategist — Unified workforce insights from five datasets")
