@@ -12,22 +12,6 @@ st.set_page_config(
     page_icon='dashboard/draup-logo.png'  # Make sure this is a .png path
 )
 
-# Inject Google Font & custom global font style inline
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
-html, body, .block-container, .stText, .stMarkdown, div, span {
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 400;
-}
-[data-testid="stMetricValue"] {
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 600;
-}
-</style>
-""", unsafe_allow_html=True)
-
 # === Custom CSS Loader ===
 def inject_custom_css(file_path="dashboard/streamlit_dashboard_custom_style.css"):
     try:
@@ -111,4 +95,95 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === Remaining dashboard content... ===
+# === KPI Section with SaaS-style Cards ===
+st.markdown("""
+<div class="kpi-container">
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background-color: #d1fae5; color: #059669;">👥</div>
+        <div class="kpi-text">
+            <h4>{:,}</h4>
+            <p>Total Workforce</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background-color: #fef3c7; color: #b45309;">⚠️</div>
+        <div class="kpi-text">
+            <h4>{:,}</h4>
+            <p>Estimated Layoffs</p>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background-color: #dbeafe; color: #1e3a8a;">🎯</div>
+        <div class="kpi-text">
+            <h4>{:,}</h4>
+            <p>Unique Skills</p>
+        </div>
+    </div>
+</div>
+""".format(
+    df_filtered['talent_size'].sum(),
+    df_filtered['estimate_layoff'].sum(),
+    df_filtered['skill'].nunique()
+), unsafe_allow_html=True)
+
+# === Tabs Section ===
+tab1, tab2, tab3 = st.tabs(["📊 Top Skills & Jobs", "📰 Layoff News", "🔍 Similar Occupations"])
+
+with tab1:
+    st.subheader(f"🔥 Top 10 Skills at Risk in {selected_state}")
+    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff",
+                        color="estimate_layoff", text_auto=True,
+                        title=f"Top Skills by Estimated Layoffs in {selected_state}",
+                        color_continuous_scale=px.colors.sequential.Teal)
+    fig_skills.update_layout(xaxis_title="", yaxis_title="Layoffs")
+    st.plotly_chart(fig_skills, use_container_width=True)
+
+    st.subheader("💼 Top 10 Occupations by Estimated Layoffs")
+    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+    fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff",
+                      color="estimate_layoff", text_auto=True,
+                      title="Top Occupations by Estimated Layoffs",
+                      color_continuous_scale=px.colors.sequential.Blues)
+    fig_jobs.update_layout(xaxis_title="", yaxis_title="Layoffs")
+    st.plotly_chart(fig_jobs, use_container_width=True)
+
+with tab2:
+    st.subheader(f"🗞️ Layoff News and Events in {selected_state}")
+    df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, na=False)]
+    if df_signal_filtered.empty:
+        st.info("No layoff news found for the selected state.")
+    else:
+        chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
+            x=alt.X('date:T', title='Date'),
+            y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
+            color=alt.Color('agency_name:N', title='Agency'),
+            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
+        ).properties(title="Layoff Events Timeline")
+        st.altair_chart(chart, use_container_width=True)
+
+        st.markdown("### 📰 Layoff News Articles")
+        for _, row in df_signal_filtered.iterrows():
+            with st.expander(f"{row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
+                st.markdown(f"**📝 Title**: {row['article_title']}")
+                st.markdown(f"**🔢 Estimated Layoffs**: {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
+                st.markdown(f"[🔗 Source]({row['source_link']})")
+
+with tab3:
+    st.subheader("🧬 Similar Occupation Explorer")
+    selected_occ = st.selectbox("🔄 Choose an occupation", sorted(df['occupation'].unique()), key="similar_occ")
+    selected_key = selected_occ.lower().strip()
+    if selected_key in df_sim.index:
+        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+        similar_df.columns = ['occupation', 'similarity']
+        fig_sim = px.bar(similar_df, x='occupation', y='similarity',
+                         title=f"👯 Similar to: {selected_occ}",
+                         color='similarity', text_auto=True,
+                         color_continuous_scale=px.colors.sequential.Oranges)
+        fig_sim.update_layout(xaxis_title="", yaxis_title="Similarity Score")
+        st.plotly_chart(fig_sim, use_container_width=True)
+    else:
+        st.warning("⚠️ Similarity data not available for this occupation.")
+
+st.markdown("---")
+st.caption("🚀 Built by your data + design team | 📊 Source: Draup")
