@@ -13,7 +13,7 @@ st.set_page_config(
 inject_custom_css()
 
 
-with open("streamlit_dashboard_custom_style.css") as f:
+with open("dashboard/streamlit_dashboard_custom_style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 page_title="🧠 Federal Layoffs & Skills Intelligence", layout="wide")
