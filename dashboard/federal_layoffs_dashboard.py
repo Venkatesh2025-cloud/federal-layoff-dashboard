@@ -68,13 +68,33 @@ with st.sidebar:
 
 df_filtered = df[df['state'] == selected_state]
 
-# === Header with Logo ===
+# === Header with logo inside title ===
 st.markdown("""
-<div style='display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;'>
-    <img src='dashboard/white-logo (1).png' style='height: 40px;'>
-    <h1 style='font-size: 1.7rem; font-weight: 600; font-family: "Inter", sans-serif; margin: 0;'>
-        Federal Layoffs & Skills Intelligence Dashboard
-    </h1>
+<style>
+    .main-title {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #003366;
+        padding: 1rem 2rem;
+        color: white;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+    .main-title img {
+        height: 36px;
+        vertical-align: middle;
+        margin-bottom: 4px;
+    }
+</style>
+
+<div class='main-title'>
+    <img src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo' />
+    Federal Layoffs & Skills Intelligence Dashboard
 </div>
 """, unsafe_allow_html=True)
 
