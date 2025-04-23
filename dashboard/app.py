@@ -17,7 +17,7 @@ def safe_read_csv(path):
 # === Load from Local Directory ===
 @st.cache_data
 def load_data():
-    df_ai = pd.read_csv("data/dashboard_ai_tagged.csv.gz", compression="gzip")
+    df_ai = pd.read_csv("data/dashboard_ai_tagged_slim.csv.gz", compression="gzip")
     df_dept_map = safe_read_csv("data/agency_department_map.csv")
     df_summary = safe_read_csv("data/dashboard_agency_state_summary.csv")
     df_signal = safe_read_csv("data/federal_layoff_signal.csv")
