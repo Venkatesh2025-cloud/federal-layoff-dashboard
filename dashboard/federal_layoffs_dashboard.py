@@ -221,24 +221,24 @@ with tab1:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # === Tab 2: Layoff Signals ===
-# === Tab 2: Layoff Signals ===
 with tab2:
+  with tab2:
     st.markdown("""
     <style>
-    .layoff-header {
+    .layoff-header {{
         font-size: 1.3rem;
         font-weight: 600;
         font-family: 'Inter', sans-serif;
         color: #0f172a;
         margin-bottom: 1rem;
-    }
-    .layoff-articles-title {
+    }}
+    .layoff-articles-title {{
         font-size: 1.1rem;
         font-weight: 600;
         font-family: 'Inter', sans-serif;
         color: #334155;
         margin-top: 2rem;
-    }
+    }}
     </style>
     <div class='layoff-header'>Layoff News & Timeline in {}</div>
     """.format(selected_state), unsafe_allow_html=True)
