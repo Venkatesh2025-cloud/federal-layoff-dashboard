@@ -221,6 +221,7 @@ with tab1:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # === Tab 2: Layoff Signals ===
+# === Tab 2: Layoff Signals ===
 with tab2:
     st.markdown("""
     <style>
