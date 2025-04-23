@@ -7,7 +7,7 @@ import plotly.express as px
 import altair as alt
 import os
 
-st.set_page_config(
+st.set_page_config(page_title="Federal Layoffs & Skills Intelligence Dashboard", layout="wide")
 
 # === Load CSV with Safe Encoding ===
 def safe_read_csv(path):
