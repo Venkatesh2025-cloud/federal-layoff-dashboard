@@ -76,18 +76,18 @@ st.markdown("""
     justify-content: space-between;
     align-items: center;
     background-color: #003366;
-    padding: 0.7rem 1.2rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 8px;
-    margin-bottom: 1.5rem;
-    margin-top: 0.3rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.2rem;
     color: white;
     font-family: 'Inter', sans-serif;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .header-strip .logo {
-    height: 26px;
+    height: 22px;
 }
 </style>
 <div class='header-strip'>
