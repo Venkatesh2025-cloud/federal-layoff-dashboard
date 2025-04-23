@@ -68,26 +68,29 @@ with st.sidebar:
 
 df_filtered = df[df['state'] == selected_state]
 
-# === Header with Logo ===
+# === Header with Clean Logo ===
 st.markdown("""
 <style>
-    .main-title {
-        font-family: 'Playfair Display', serif;
-        background-color: #003366;
-        padding: 1rem 1.2rem;
-        color: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        font-size: 1.8rem;
-        margin-bottom: 1.8rem;
-    }
-    .main-title img {
-        height: 32px;
-        vertical-align: middle;
-    }
+.main-title {
+    font-family: 'Inter', sans-serif;
+    background-color: #003366;
+    padding: 0.9rem 1.2rem;
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    font-size: 1.6rem;
+    font-weight: 500;
+    margin-bottom: 1.6rem;
+    margin-top: 0.5rem;
+}
+.main-title img {
+    height: 28px;
+    vertical-align: middle;
+    margin-bottom: 3px;
+}
 </style>
 <div class='main-title'>
     <img src='https://draupmedia.s3.us-east-2.amazonaws.com/wp-content/uploads/2024/12/13112230/white-logo.svg' alt='Draup Logo'>
@@ -95,14 +98,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === KPI Cards ===
+# === KPI Cards Refined ===
 st.markdown("""
 <style>
 .kpi-container {
     display: flex;
     justify-content: space-between;
     gap: 1.2rem;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     margin-bottom: 1.5rem;
 }
 .kpi-card {
@@ -110,36 +113,39 @@ st.markdown("""
     background: #ffffff;
     border-radius: 14px;
     padding: 1.4rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
 }
 .kpi-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
 }
 .kpi-icon {
     width: 50px;
     height: 50px;
     border-radius: 12px;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #f3f4f6;
 }
 .kpi-text h4 {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 700;
     color: #111827;
+    font-family: 'Inter', sans-serif;
 }
 .kpi-text p {
     margin: 0;
     font-size: 0.9rem;
     font-weight: 500;
     color: #6b7280;
+    font-family: 'Inter', sans-serif;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -169,56 +175,3 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# === Tabs ===
-tab1, tab2, tab3 = st.tabs(["📊 Top Skills & Jobs", "📰 Layoff News", "🔍 Similar Occupations"])
-
-with tab1:
-    st.subheader(f"🔥 Top 10 Skills at Risk in {selected_state}")
-    top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    fig_skills = px.bar(top_skills, x="skill", y="estimate_layoff", color="estimate_layoff", text_auto=True, color_continuous_scale=px.colors.sequential.Teal)
-    fig_skills.update_layout(xaxis_title="", yaxis_title="Layoffs")
-    st.plotly_chart(fig_skills, use_container_width=True)
-
-    st.subheader("💼 Top 10 Occupations by Estimated Layoffs")
-    top_jobs = df_filtered.groupby("occupation")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
-    fig_jobs = px.bar(top_jobs, x="occupation", y="estimate_layoff", color="estimate_layoff", text_auto=True, color_continuous_scale=px.colors.sequential.Blues)
-    fig_jobs.update_layout(xaxis_title="", yaxis_title="Layoffs")
-    st.plotly_chart(fig_jobs, use_container_width=True)
-
-with tab2:
-    st.subheader(f"🗞️ Layoff News and Events in {selected_state}")
-    df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, na=False)]
-    if df_signal_filtered.empty:
-        st.info("No layoff news found for the selected state.")
-    else:
-        chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
-            x=alt.X('date:T', title='Date'),
-            y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
-            color=alt.Color('agency_name:N', title='Agency'),
-            tooltip=['date', 'agency_name', 'estimated_layoff', 'article_title']
-        ).properties(title="Layoff Events Timeline")
-        st.altair_chart(chart, use_container_width=True)
-
-        st.markdown("### 📰 Layoff News Articles")
-        for _, row in df_signal_filtered.iterrows():
-            with st.expander(f"{row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
-                st.markdown(f"**📝 Title**: {row['article_title']}")
-                st.markdown(f"**🔢 Estimated Layoffs**: {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
-                st.markdown(f"[🔗 Source]({row['source_link']})")
-
-with tab3:
-    st.subheader("🧬 Similar Occupation Explorer")
-    selected_occ = st.selectbox("🔄 Choose an occupation", sorted(df['occupation'].unique()), key="similar_occ")
-    selected_key = selected_occ.lower().strip()
-    if selected_key in df_sim.index:
-        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
-        similar_df.columns = ['occupation', 'similarity']
-        fig_sim = px.bar(similar_df, x='occupation', y='similarity', color='similarity', text_auto=True, color_continuous_scale=px.colors.sequential.Oranges)
-        fig_sim.update_layout(xaxis_title="", yaxis_title="Similarity Score", title=f"👯 Similar to: {selected_occ}")
-        st.plotly_chart(fig_sim, use_container_width=True)
-    else:
-        st.warning("⚠️ Similarity data not available for this occupation.")
-
-st.markdown("---")
-st.caption("🚀 Built by your data + design team | 📊 Source: Draup")
