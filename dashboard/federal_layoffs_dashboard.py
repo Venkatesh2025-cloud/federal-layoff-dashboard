@@ -207,30 +207,16 @@ with tab1:
     st.plotly_chart(fig_jobs, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
-
 # === Tab 2: Layoff Signals ===
 with tab2:
     st.subheader(f"Layoff News & Timeline in {selected_state}")
-    df_signal_filtered = df_signal[df_signal['state'] == selected_state]
+    
+    # Fix: Ensure case-insensitive and trimmed comparison
+    df_signal_filtered = df_signal[df_signal['state'].str.lower().str.strip() == selected_state.lower().strip()]
 
-    if df_signal_filtered.empty or df_signal_filtered['date'].isnull().all():
-        st.info("No layoff news or valid date entries found for the selected state.")
+    if df_signal_filtered.empty:
+        st.info("No layoff news found for the selected state.")
     else:
-        # Optional: add a date range filter
-        min_date = df_signal_filtered['date'].min()
-        max_date = df_signal_filtered['date'].max()
-        date_range = st.slider(
-            "Filter timeline by date range",
-            min_value=min_date,
-            max_value=max_date,
-            value=(min_date, max_date)
-        )
-        df_signal_filtered = df_signal_filtered[
-            (df_signal_filtered['date'] >= date_range[0]) &
-            (df_signal_filtered['date'] <= date_range[1])
-        ]
-
-        # Bar chart for layoff timeline
         chart = alt.Chart(df_signal_filtered.dropna(subset=['date'])).mark_bar().encode(
             x=alt.X('date:T', title='Date'),
             y=alt.Y('estimated_layoff:Q', title='Estimated Layoffs'),
@@ -239,7 +225,6 @@ with tab2:
         ).properties(title="Layoff Events Timeline")
         st.altair_chart(chart, use_container_width=True)
 
-        # Layoff news section
         st.markdown("### Layoff News Articles")
         for _, row in df_signal_filtered.iterrows():
             date_str = row['date'].strftime('%b %d, %Y') if pd.notna(row['date']) else "Unknown Date"
@@ -248,6 +233,7 @@ with tab2:
                 st.markdown(f"**Title:** {row['article_title']}")
                 st.markdown(f"**Estimated Layoffs:** {layoffs}")
                 st.markdown(f"[Read More]({row['source_link']})")
+
 
 
 # === Tab 3: Alternative Career Paths ===
