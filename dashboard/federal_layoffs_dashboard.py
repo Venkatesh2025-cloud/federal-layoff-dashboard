@@ -71,29 +71,34 @@ st.toast(f"Dashboard updated for {selected_state}")
 df_filtered = df[df['state'] == selected_state]
 
 # === Header ===
-st.markdown("""
-    <h1 style='text-align: center; background-color: #003366; color: white; padding: 1rem; border-radius: 8px;'>
-        Federal Layoffs & Skills Intelligence Dashboard
-    </h1>
-"", unsafe_allow_html=True)
+header_html = (
+    "<h1 style='text-align: center; background-color: #003366; color: white; "
+    "padding: 1rem; border-radius: 8px;'>Federal Layoffs & Skills Intelligence Dashboard</h1>"
+)
+st.markdown(header_html, unsafe_allow_html=True)
 
 # === KPI Section ===
-st.markdown("""
+total_workforce = df_filtered['talent_size'].sum()
+total_layoffs = df_filtered['estimate_layoff'].sum()
+unique_skills = df_filtered['skill'].nunique()
+
+kpi_html = f'''
 <div style="display: flex; justify-content: space-around; font-family: 'Inter', sans-serif;">
     <div style="background: #f0fdf4; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #34a853;">{:,}</div>
+        <div style="font-size: 1.7rem; font-weight: 600; color: #34a853;">{total_workforce:,}</div>
         <div style="color: #444; font-size: 0.95rem;">Total Workforce</div>
     </div>
     <div style="background: #fff7ed; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #f9a825;">{:,}</div>
+        <div style="font-size: 1.7rem; font-weight: 600; color: #f9a825;">{total_layoffs:,}</div>
         <div style="color: #444; font-size: 0.95rem;">Estimated Layoffs</div>
     </div>
     <div style="background: #e3f2fd; border-radius: 12px; padding: 1rem; text-align: center; width: 30%;">
-        <div style="font-size: 1.7rem; font-weight: 600; color: #1e88e5;">{:,}</div>
+        <div style="font-size: 1.7rem; font-weight: 600; color: #1e88e5;">{unique_skills:,}</div>
         <div style="color: #444; font-size: 0.95rem;">Unique Skills</div>
     </div>
 </div>
-"".format(df_filtered['talent_size'].sum(), df_filtered['estimate_layoff'].sum(), df_filtered['skill'].nunique()), unsafe_allow_html=True)
+'''
+st.markdown(kpi_html, unsafe_allow_html=True)
 
 # === Tabs ===
 t1, t2, t3 = st.tabs([
