@@ -109,6 +109,23 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# === Top 10 Skills at Risk ===
+st.markdown("""
+<div class='alt-container'>
+<h4 style="margin-bottom: 0.5rem;">🔥 Top 10 Skills at Risk</h4>
+""", unsafe_allow_html=True)
+
+top_skills = df_filtered.groupby("skill")["estimate_layoff"].sum().reset_index().sort_values("estimate_layoff", ascending=False).head(10)
+top_skills['skill'] = top_skills['skill'].str.title()
+fig_skills = px.bar(top_skills, x="estimate_layoff", y="skill", orientation='h',
+                    title=f"Top Skills by Estimated Layoffs in {selected_state}",
+                    color="estimate_layoff",
+                    color_continuous_scale=px.colors.sequential.Teal)
+fig_skills.update_layout(xaxis_title="Layoffs", yaxis_title="Skill", title_font=dict(size=16))
+st.plotly_chart(fig_skills, use_container_width=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
 # === Similar Occupation Explorer ===
 st.markdown("""
 <div class='alt-container'>
