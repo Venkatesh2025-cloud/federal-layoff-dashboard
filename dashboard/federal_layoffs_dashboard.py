@@ -63,8 +63,8 @@ df_signal['estimated_layoff'] = pd.to_numeric(df_signal['estimated_layoff'].repl
 
 # === Sidebar ===
 with st.sidebar:
-    st.markdown("### 🔎 Filter Options")
-    selected_state = st.selectbox("📍 Select a State", sorted(df['state'].unique()))
+    st.markdown("### Filter Options")
+    selected_state = st.selectbox("Select a State", sorted(df['state'].unique()))
 
 df_filtered = df[df['state'] == selected_state]
 
@@ -98,13 +98,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === Tabs Section ===
-tab1, tab2, tab3 = st.tabs(["📊 Layoff Intelligence", "📰 Layoff Signals", "🔁 Alternative Career Paths"])
+tab1, tab2, tab3 = st.tabs(["Layoff Intelligence", "Layoff Signals", "Alternative Career Paths"])
 
 # === Tab 1: Layoff Intelligence ===
 with tab1:
     st.markdown("""
     <div class='alt-container'>
-    <h4 style="margin-bottom: 0.5rem;">🔥 Top Skills at Risk</h4>
+    <h4 style="margin-bottom: 0.5rem;">Top Skills at Risk</h4>
     """, unsafe_allow_html=True)
 
     skill_top_n = st.radio("Select number of top skills", options=[5, 10], horizontal=True)
@@ -118,7 +118,7 @@ with tab1:
     st.plotly_chart(fig_skills, use_container_width=True)
 
     st.markdown("""
-    <h4 style="margin-top: 1.5rem;">💼 Top Occupations at Risk</h4>
+    <h4 style="margin-top: 1.5rem;">Top Occupations at Risk</h4>
     """, unsafe_allow_html=True)
 
     job_top_n = st.radio("Select number of top occupations", options=[5, 10], horizontal=True)
@@ -137,7 +137,7 @@ with tab1:
 with tab2:
     st.markdown("""
     <div class='alt-container'>
-    <h4 style="margin-bottom: 0.5rem;">📰 Federal Layoff Signals</h4>
+    <h4 style="margin-bottom: 0.5rem;">Federal Layoff Signals</h4>
     """, unsafe_allow_html=True)
     df_signal_filtered = df_signal[df_signal['state'] == selected_state]
     if df_signal_filtered.empty:
@@ -151,19 +151,19 @@ with tab2:
         ).properties(title="Layoff Events Timeline")
         st.altair_chart(chart, use_container_width=True)
 
-        st.markdown("### 🗞️ Layoff News Articles")
+        st.markdown("### Layoff News Articles")
         for _, row in df_signal_filtered.iterrows():
             with st.expander(f"{row['date'].strftime('%b %d, %Y')} — {row['agency_name']}"):
-                st.markdown(f"**📝 Title**: {row['article_title']}")
-                st.markdown(f"**🔢 Estimated Layoffs**: {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
-                st.markdown(f"[🔗 Source]({row['source_link']})")
+                st.markdown(f"**Title**: {row['article_title']}")
+                st.markdown(f"**Estimated Layoffs**: {int(row['estimated_layoff']) if pd.notna(row['estimated_layoff']) else 'Unspecified'}")
+                st.markdown(f"[Source]({row['source_link']})")
     st.markdown("</div>", unsafe_allow_html=True)
 
 # === Tab 3: Alternative Career Paths ===
 with tab3:
     st.markdown("""
     <div class='alt-container'>
-    <h4 style="margin-bottom: 0.5rem;">🔁 Similar Occupation Explorer</h4>
+    <h4 style="margin-bottom: 0.5rem;">Similar Occupation Explorer</h4>
     """, unsafe_allow_html=True)
 
     df['occupation_display'] = df['occupation'].str.title()
@@ -183,6 +183,6 @@ with tab3:
         fig3.update_layout(xaxis_title="Similarity Score", yaxis_title="", title_font=dict(size=16))
         st.plotly_chart(fig3, use_container_width=True)
     else:
-        st.warning("⚠️ Similarity data not available for this occupation.")
+        st.warning("Similarity data not available for this occupation.")
 
     st.markdown("</div>", unsafe_allow_html=True)
