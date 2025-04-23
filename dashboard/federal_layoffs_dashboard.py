@@ -209,7 +209,7 @@ with tab1:
     st.markdown("</div>", unsafe_allow_html=True)
     # === Tab 2: Layoff Signals ===
 with tab2:
-    with tab2:
+   with tab2:
     st.subheader(f"Layoff News & Timeline in {selected_state}")
     df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, na=False)]
 
