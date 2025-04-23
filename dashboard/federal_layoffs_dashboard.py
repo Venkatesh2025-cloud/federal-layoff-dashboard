@@ -272,3 +272,42 @@ with tab2:
                 st.markdown(f"**Title:** {row['article_title']}")
                 st.markdown(f"**Estimated Layoffs:** {layoffs}")
                 st.markdown(f"[Read Article]({row['source_link']})")
+
+# === Tab 3: Alternative Career Paths ===
+with tab3:
+    st.markdown("""
+    <style>
+    .career-header {
+        font-size: 1.3rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        margin-bottom: 1rem;
+    }
+    </style>
+    <div class='career-header'>Explore Similar Occupations</div>
+    """, unsafe_allow_html=True)
+
+    selected_occ = st.selectbox("Select an occupation to find alternatives", sorted(df_filtered['occupation'].unique()), key="similar_occ")
+    selected_key = selected_occ.lower().strip()
+
+    if selected_key in df_sim.index:
+        similar_df = df_sim.loc[selected_key].sort_values(ascending=False).head(10).reset_index()
+        similar_df.columns = ['Occupation', 'Similarity Score']
+        similar_df['Occupation'] = similar_df['Occupation'].str.title()
+
+        fig_sim = px.bar(similar_df, x='Similarity Score', y='Occupation',
+                         orientation='h',
+                         color='Similarity Score',
+                         color_continuous_scale=px.colors.sequential.Oranges,
+                         title=f"Top Alternative Careers for: {selected_occ}")
+        fig_sim.update_layout(
+            title_font=dict(size=16),
+            xaxis_title="Similarity Score",
+            yaxis_title="Occupation",
+            margin=dict(t=40, b=20)
+        )
+        st.plotly_chart(fig_sim, use_container_width=True)
+    else:
+        st.warning("Similarity data not available for this occupation.")
+
