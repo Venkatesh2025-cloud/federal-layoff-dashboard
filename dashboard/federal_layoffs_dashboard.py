@@ -222,25 +222,30 @@ with tab1:
 
 # === Tab 2: Layoff Signals ===
 with tab2:
-  with tab2:
     st.markdown("""
     <style>
-    .layoff-header {{
+    .layoff-header {
         font-size: 1.3rem;
         font-weight: 600;
         font-family: 'Inter', sans-serif;
         color: #0f172a;
         margin-bottom: 1rem;
-    }}
-    .layoff-articles-title {{
+    }
+    .layoff-articles-title {
         font-size: 1.1rem;
         font-weight: 600;
         font-family: 'Inter', sans-serif;
         color: #334155;
         margin-top: 2rem;
-    }}
+    }
+    .kpi-card:hover {
+        transform: scale(1.01);
+        background-color: #f1f5f9;
+        cursor: pointer;
+    }
     </style>
     <div class='layoff-header'>Layoff News & Timeline in {}</div>
+    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 1rem 0;">
     """.format(selected_state), unsafe_allow_html=True)
 
     df_signal_filtered = df_signal[df_signal['state'].str.contains(selected_state, case=False, na=False)]
@@ -272,6 +277,10 @@ with tab2:
                 st.markdown(f"**Title:** {row['article_title']}")
                 st.markdown(f"**Estimated Layoffs:** {layoffs}")
                 st.markdown(f"[Read Article]({row['source_link']})")
+
+    # === Export Filtered Data Option ===
+    st.download_button("Download CSV", df_signal_filtered.to_csv(index=False), "filtered_layoff_signals.csv")
+
 
 # === Tab 3: Alternative Career Paths ===
 with tab3:
